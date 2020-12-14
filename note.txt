@@ -1,0 +1,12 @@
+
+product edit
+product delete
+
+product show with new options
+
+//review manage
+
+Add review customer
+Add review admin
+Edit review
+Approve review

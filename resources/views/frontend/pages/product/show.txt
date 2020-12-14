@@ -1,0 +1,623 @@
+@php
+use App\AttributeSet;
+use App\Attribute;
+use App\Brand;
+use App\Review;
+use App\Product;
+use App\PpageBanner;
+use App\Faq;
+Use App\BanglaConverter;
+
+
+@endphp
+@extends('frontend.layouts.home')
+
+@extends('frontend.layouts.reviewstyle')
+
+@section('content')
+
+@include('frontend.layouts.partials.error')
+
+        <!-- shop single page start here -->
+        <section class="shop-single padding-tb">
+            <div class="container">
+                <div class="section-wrapper">
+                    <div class="main_side">
+                        <div class="shop_single_slider">
+                            <div class="shop_top">
+                                <div class="shop_left" style="max-height: 363px;">
+                                    <div class="shop_thumb">
+                                        <div class="slider-for">
+                                            @if(!is_null($product->images))
+                                            @php
+                                                $i = 1;
+                                            @endphp
+
+                                            @foreach($product->images as $image)
+                                                
+                                                <div class="thumb">
+                                                <img id="myimage{{$i}}" src="{{asset('images/'.$image->image) }}" alt="">
+                                                </div>
+                                               
+                                            @php
+                                                $i++;
+                                            @endphp
+                                            @endforeach
+                                            @else
+                                                <div class="thumb">
+                                                <img id="myimage" src="{{asset('images/no-img.jpg') }}" alt="">
+                                                </div>
+                                            @endif
+                                            
+                                        </a>
+                                            
+
+                                            
+                                        </div>
+                                        <div class="slider-nav" style="max-height: 90px;">
+                                            @if(!is_null($product->images))
+                                            @foreach($product->images as $image)
+
+                                                <div class="thumb">
+                                                    <img src="{{asset('images/'.$image->image) }}" alt="shop">
+                                                </div>
+
+                                            @endforeach
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="shop_right">
+                                    <div class="shop_content">
+                                        <h4>
+                                            <a href="#">
+                                            @if(Config::get('app.locale') == 'bd')
+
+                                                @if(!is_null($product->title_bd))
+                                                    {{ $product->title_bd }}
+                                                @else
+                                                    {{ $product->title }}
+                                                @endif
+
+                                            @elseif(Config::get('app.locale') == 'en')
+                                                {{ $product->title }}
+                                            @endif
+                                            
+                                            </a>
+                                        </h4>
+                                        <div class="shop_rating">
+
+                                            @php
+                                                $reviews = Review::where('product_id',$product->id)->get();
+                                                $totalrow = 0;
+                                                if (count($reviews) >0 ) {
+                                                    
+                                                    $totalrating = 0;
+                                                    foreach ($reviews as $review) {
+                                                         $totalrating += $review->rating; 
+                                                     }
+                                                     $totalrow = count($reviews);
+                                                     $avarage_rating = $totalrating/$totalrow;
+     
+                                                     if (is_float($avarage_rating) == TRUE) {
+                                                         $rating = $avarage_rating + 1;
+                                                         $final_rating = intval($rating);
+                                                     }
+                                                     else {
+                                                        $final_rating = $avarage_rating;
+                                                     }
+
+                                                     
+
+                                                    $rating = $final_rating;
+                                                 } 
+                                                 else {
+                                                    $rating = 0;
+                                                 }
+
+                                            @endphp  
+
+                                            
+
+                                            <span class="rating">
+                                                @foreach(range(1,5) as $i)
+                                                <span class="fa-stack" style="width:1em">
+                                                    <i class="far fa-star fa-stack-1x"></i>
+
+                                                    @if($rating >0)
+                                                        @if($rating >0.5)
+                                                            <i class="fas fa-star fa-stack-1x"></i>
+                                                        @else
+                                                            <i class="fas fa-star-half fa-stack-1x"></i>
+                                                        @endif
+                                                    @endif
+                                                    @php $rating--; @endphp
+                                                </span>
+                                            @endforeach
+
+                                                ({{ $totalrow }} {{__('home.ratings')}})
+                                            </span>
+                                            <div class="reviw">
+                                                <a href="#reviw"><img src="{{asset('assets/images/shop/single/03.png')}}" alt="shop"> {{__('home.write_a_review')}}</a>
+                                            </div>
+                                        </div>
+                                        @if($product->offer_price > 0)
+                                        <h4 class="price">&#2547; 
+                                            @if(Config::get('app.locale') == 'bd')
+
+                                                @php
+                                                  echo BanglaConverter::en2bn($product->offer_price);
+                                                @endphp
+
+                                            @elseif(Config::get('app.locale') == 'en')
+                                                {{$product->offer_price}}
+                                            @endif
+                                         <del>&#2547;
+
+                                            
+
+                                            @if(Config::get('app.locale') == 'bd')
+
+                                                @php
+                                                  echo BanglaConverter::en2bn($product->price);
+                                                @endphp
+
+                                            @elseif(Config::get('app.locale') == 'en')
+                                                {{$product->price}}
+                                            @endif
+
+                                            
+
+                                            </del></h4>
+                                        {{__('home.you_save')}} <span class="price">&#2547;
+
+                                        @if(Config::get('app.locale') == 'bd')
+
+                                            @php
+                                              echo BanglaConverter::en2bn($product->price-$product->offer_price);
+                                            @endphp
+
+                                        @elseif(Config::get('app.locale') == 'en')
+                                            {{$product->price-$product->offer_price}}
+                                        @endif
+
+                                        @php
+                                            $off_amount = $product->price-$product->offer_price;
+                                            $off_parcent = intval(($off_amount/$product->price)*100);
+                                        @endphp
+
+                                        (
+                                        @if(Config::get('app.locale') == 'bd')
+
+                                                @php
+                                                  echo BanglaConverter::en2bn($off_parcent);
+                                                @endphp
+
+                                            @elseif(Config::get('app.locale') == 'en')
+                                                {{$off_parcent}}
+                                            @endif
+                                        %)
+                                        </span>
+                                        @else
+                                        <h4 class="price">&#2547;
+                                            @if(Config::get('app.locale') == 'bd')
+
+                                                @php
+                                                  echo BanglaConverter::en2bn($product->price);
+                                                @endphp
+
+                                            @elseif(Config::get('app.locale') == 'en')
+                                                {{$product->price}}
+                                            @endif
+                                        </h4>
+                                        @endif
+                                        <ul class="brand_list">
+                                            <li>
+                                                @if(!is_null($product->brand_id))
+                                                    @php
+                                                        $brand = Brand::find($product->brand_id);
+                                                        
+                                                    @endphp
+
+                                                    @if(!is_null($brand))
+                                                        <div class="left">{{__('home.brand')}}</div>
+
+                                                        @if(Config::get('app.locale') == 'bd')
+
+                                                        @if(!is_null($brand->name_bd))
+                                                            <div class="right">{{$brand->name_bd}}</div>
+                                                        @else
+                                                            <div class="right">{{$brand->name}}</div>
+                                                        @endif
+
+                                                        @elseif(Config::get('app.locale') == 'en')
+                                                            <div class="right">{{$brand->name}}</div>
+                                                        @endif
+
+                                                    @endif
+                                                @endif
+                                                
+                                            </li>
+                                            @if(!empty($product->sku))
+                                            <li>
+                                                <div class="left">Product Code</div>
+                                                <div class="right">{{$product->sku}}</div>
+                                            </li>
+                                            @endif
+                                            <li>
+                                                <div class="left">{{__('home.available')}}</div>
+                                                <div class="right">
+                                                    @if($product->quantity == 0)
+                                                        <span class="text-danger"{{__('home.not_available')}}/span>
+                                                    @else
+                                                        {{$product->quantity}}
+                                                    @endif
+                                                    
+                                                </div>
+                                            </li>
+
+                                        <form action="{{route('carts.store')}}" method="post">
+                                            @csrf
+                                            <input type="hidden" name="price" value="{{ $product->price }}"><input type="hidden" name="product_id" value="{{ $product->id }}">
+                                                        
+
+                                            @php
+                                                $attributes = $product->attribute_options;
+                                                if (!is_null($attributes)) {
+                                                    # code...
+
+                                                    $unserialize_attributes = unserialize($attributes);
+                                                    $all_keys = array_keys($unserialize_attributes);
+                                                    
+                                                }
+                                            @endphp
+
+                                            @if(!is_null($attributes))
+                                                @foreach($all_keys as $key)
+
+                                                    <li>
+                                                        <div class="left">{{ $key }}*</div>
+                                                        
+
+                                                        <div class="right">
+                                                            <select name="attribute_options[]" required>
+                                                            <option value="">Select</option>
+
+                                                            @foreach($unserialize_attributes[$key] as $value)
+                                                                    @php
+                                                                        $value_as_array = explode(',', $value);
+                                                                        //print_r($value_as_array);
+                                                                    @endphp
+                                                                    @foreach($value_as_array as $option)
+                                                                        <option value="{{ $option }}">{{$option}}</option>
+                                                                    @endforeach
+                                                                       {{--  <option value="{{ $value }}">{{$value}}</option> --}}
+                                                            @endforeach
+                                                              
+
+                                                            </select>
+                                                        </div>
+                                                    </li> 
+
+                                                    
+
+                                                @endforeach
+
+                                            @endif
+
+                                            {{-- @if(!is_null($product->attribute_options))
+
+                                            @foreach($product_attributes as $product_attribute)
+                                                <li>
+                                                    <div class="left">{{ $product_attribute->name }}*</div>
+                                                    <input type="hidden" name="attributes_id[]" value="{{ $product_attribute->id }}">
+
+                                                    <div class="right">
+                                                        <select name="{{$product_attribute->id}}" required>
+                                                        <option value="">Select</option>
+
+                                                        @php
+                                                            $all_attribute_options = unserialize($product_attribute->options);
+                                                            $product_attribute_options = unserialize($product->attribute_options);
+                                                        @endphp
+                                                        @foreach($all_attribute_options as $attribute_option)
+                                                            @foreach($product_attribute_options as $product_attribute_option)
+                                                                @if($product_attribute_option == $attribute_option)
+                                                                    <option value="{{ $attribute_option }}">{{ $attribute_option }}</option>
+                                                                @endif
+                                                            @endforeach
+                                                        @endforeach
+                                                          
+
+                                                        </select>
+                                                    </div>
+                                                </li> 
+                                            @endforeach
+
+                                            @endif --}}
+
+
+
+                                        </ul>
+                                        <div class="cart-plus-minus">
+                                            <div class="dec qtybutton">-</div>
+                                            <input class="cart-plus-minus-box" type="text" name="qtybutton" value="1">
+                                            <div class="inc qtybutton">+</div>
+                                        </div>
+                                        
+                                        <div class="price_btn">
+                                            @include('frontend.layouts.partials.cart-button')
+
+                                        </form>
+
+                                            @include('frontend.layouts.partials.wishlist-button')
+                                        </div>
+
+
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="review">
+                                <ul class="review-nav">
+                                    <li class="desc active" data-target="description-show">{{__('home.product_descriptions')}}</li>
+                                    <li class="spe_shop" data-target="Spe-show">{{__('home.product_specifications')}}</li>
+                                    <li class="rev" data-target="review-content-show">{{__('home.product_reviews')}}</li>
+                                </ul>
+                                <div class="review-content description-show">
+                                    <div class="review-showing">
+                                        <ul class="content">
+
+                                            @foreach($reviews as $review)
+                                            <li>
+                                                <div class="post-thumb">
+                                                    <img src="assets/images/shop/01.png" alt="shop">
+                                                </div>
+                                                <div class="post-content">
+                                                    <div class="entry-meta">
+                                                        <div class="posted-on">
+                                                            <a href="#">{{ $review->user_name }}</a>
+                                                            <p>Posted on {{ date( "F j, Y, g:i a" ,strtotime($review->created_at)) }}</p>
+                                                        </div>
+
+
+
+                                                        <div class="rating">
+                                                            <style type="text/css">
+                                                                .content span:before, .content span:after {
+                                                                        position: absolute;
+                                                                        content: "";
+                                                                        background-color: transparent;
+                                                                        width: 40px;
+                                                                        height: 2px;
+                                                                        top: 40%;
+                                                                    }
+                                                            </style>
+                                                            @php $rating = $review->rating; @endphp  
+
+                                                                @foreach(range(1,5) as $i)
+                                                                    <span class="fa-stack" style="width:1em">
+                                                                        <i class="far fa-star fa-stack-1x"></i>
+
+                                                                        @if($rating >0)
+                                                                            @if($rating >0.5)
+                                                                                <i class="fas fa-star fa-stack-1x"></i>
+                                                                            @else
+                                                                                <i class="fas fa-star-half fa-stack-1x"></i>
+                                                                            @endif
+                                                                        @endif
+                                                                        @php $rating--; @endphp
+                                                                    </span>
+                                                                @endforeach
+                                                        </div>
+                                                    </div>
+                                                    <div class="entry-content" style="text-align: justify;">
+                                                        <p>{{ $review->user_message }}</p>
+                                                    </div>
+                                                </div>
+                                            </li>
+                                            @endforeach
+
+                                        </ul>
+                                        <div id="reviw" class="client-review">
+                                            <div class="review-form">
+                                                <div class="review-title">
+                                                    <h5>{{__('home.add_a_review')}}</h5>
+                                                </div>
+                                                <form action="{{ route('review.user.create') }}" class="row" method="post">
+                                                    <div class="col-md-4 col-12">
+                                                        <input type="text" name="user_name" placeholder="{{__('home.full_name')}}">
+                                                    </div>
+                                                    <div class="col-md-4 col-12">
+                                                        <input type="text" name="user_email" placeholder="{{__('home.email_address')}}">
+                                                    </div>
+                                                    <div class="col-md-4 col-12">
+                                                        <div class="rating">
+                                                            <span class="rating-title">{{__('home.your_rating')}} : 
+                                                                <div class="wrapper">
+                                                                  <fieldset class="rating">
+                                                                    <input type="radio" id="star5" name="rating" value="5" /><label class = "full" for="star5" title="Awesome - 5 stars"></label>
+
+                                                                    <input type="radio" id="star4" name="rating" value="4" /><label class = "full" for="star4" title="Pretty good - 4 stars"></label>
+                                                                   
+                                                                    <input type="radio" id="star3" name="rating" value="3" /><label class = "full" for="star3" title="Meh - 3 stars"></label>
+                                                                   
+                                                                    <input type="radio" id="star2" name="rating" value="2" /><label class = "full" for="star2" title="Kinda bad - 2 stars"></label>
+                                                                    
+                                                                    <input type="radio" id="star1" name="rating" value="1" /><label class = "full" for="star1" title="Sucks big time - 1 star"></label>
+                                                                    
+                                                                </fieldset>
+                                                                </div>
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-12 col-12">
+                                                        <textarea rows="5" placeholder="{{__('home.type_here_review')}}" name="user_message"></textarea>
+                                                        <input type="hidden" name="product_id" value="{{ $product->id }}">
+
+                                                        @csrf
+                                                    </div>
+                                                    <div class="col-12">
+                                                        <button class="btn" type="submit">{{__('home.submit_button')}}</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="spe_shop">
+                                        <div class="tec_spe">
+                                            @if(Config::get('app.locale') == 'bd')
+
+                                            @if(!is_null($product->specifications_bd))
+                                                {!!html_entity_decode($product->specifications_bd)!!}
+                                                
+                                            @else
+                                                {!!html_entity_decode($product->specifications)!!}
+                                            @endif
+
+                                            @elseif(Config::get('app.locale') == 'en')
+                                                {!!html_entity_decode($product->specifications)!!}
+                                            @endif
+                                        </div>
+                                    </div>
+                                    <div class="description">
+                                        @if(Config::get('app.locale') == 'bd')
+
+                                            @if(!is_null($product->description_bd))
+                                                {!!html_entity_decode($product->description_bd)!!}
+                                            @else
+                                                {!!html_entity_decode($product->description)!!}
+
+                                            @endif
+
+                                        @elseif(Config::get('app.locale') == 'en')
+                                        {!!html_entity_decode($product->description)!!}
+                                        @endif
+
+                                        
+                                        
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="faq_part">
+                            <div class="title">
+                                <h2>{{__('home.faq')}}</h2>
+                            </div>
+                            <div class="accordion" id="accordionExample">
+
+                                @php
+                                    $faqs = Faq::orderBy('question', 'asc')->get();
+                                    $i = 0;
+                                @endphp
+                                @foreach($faqs as $faq)
+
+
+                                @if(Config::get('app.locale') == 'bd')
+
+                                    @if(!is_null($product->title_bd))
+                                        <div class="faq_item">
+                                            <div class="faq_head">
+                                                <span data-toggle="collapse" data-target="#collapse{{$faq->id}}">{{$faq->question_bd}}</span>
+                                            </div>
+                                            <div id="collapse{{$faq->id}}" class="collapse" aria-labelledby="headingOne" data-parent="#accordionExample">
+                                                <div class="faq_content">
+                                                    <p>{{$faq->answer_bd}}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @else
+                                        <div class="faq_item">
+                                            <div class="faq_head">
+                                                <span data-toggle="collapse" data-target="#collapse{{$faq->id}}">{{$faq->question}}</span>
+                                            </div>
+                                            <div id="collapse{{$faq->id}}" class="collapse" aria-labelledby="headingOne" data-parent="#accordionExample">
+                                                <div class="faq_content">
+                                                    <p>{{$faq->answer}}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @endif
+
+                                @elseif(Config::get('app.locale') == 'en')
+                                    <div class="faq_item">
+                                            <div class="faq_head">
+                                                <span data-toggle="collapse" data-target="#collapse{{$faq->id}}">{{$faq->question}}</span>
+                                            </div>
+                                            <div id="collapse{{$faq->id}}" class="collapse" aria-labelledby="headingOne" data-parent="#accordionExample">
+                                                <div class="faq_content">
+                                                    <p>{{$faq->answer}}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                @endif
+
+                                
+                                @endforeach
+
+
+                            </div>
+                        </div>
+                    </div>
+                    <div class="widget_side">
+                        @php
+                            $pproductpagebanners = PpageBanner::orderBy('id', 'asc')->get();
+                        @endphp
+                        @foreach($pproductpagebanners as $pproductpagebanner)
+                        <div class="widget_add wid_item">
+                            <a href="{{$pproductpagebanner->slug}}"><img src="{{ asset('/images/'.$pproductpagebanner->image) }}" alt="single-add"></a>
+                        </div>
+                        @endforeach
+
+                        <div class="letest_product wid_item">
+                            <div class="widget_title">
+                                <h4>Related Items</h4>
+                            </div>
+                            <div class="widget_wrapper">
+                                <ul>
+                                    @php
+                                        $related_products = Product::where('category_id', $product->category_id)->paginate(6);
+
+                                    @endphp
+
+                                    @foreach($related_products as $related_product)
+                                    <li>
+                                        <div class="product_thumb">
+                                            @if(!is_null($related_product->images->first()))
+                                            <img src="{{asset('images/'.$related_product->images->first()->image)}}" alt="">
+                                            @else
+                                            <img src="{{asset('images/no-img.jpg')}}" alt="">
+                                            @endif
+                                        </div>
+
+                                        <div class="product_content">
+                                            <h6><a href="{{route('product.show', $related_product->slug)}}">
+                                                @if(Config::get('app.locale') == 'bd')
+
+                                                @if(!is_null($related_product->title_bd))
+                                                    {{ $related_product->title_bd }}
+                                                @else
+                                                    {{ $related_product->title }}
+                                                @endif
+
+                                                @elseif(Config::get('app.locale') == 'en')
+                                                    {{ $related_product->title }}
+                                                @endif
+
+                                            </a></h6>
+                                            <p>TK. {{$related_product->price}}</p>
+                                        </div>
+                                    </li>
+
+                                    @endforeach
+                                    
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- shop single page ending here -->
+
+@endsection

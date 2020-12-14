@@ -1,0 +1,175 @@
+<?php
+
+namespace App\Http\Controllers\Frontend;
+
+use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+use App\Cart;
+use App\Order;
+use App\Product;
+use App\Shipping;
+use Auth;
+
+
+class CartsController extends Controller
+{
+	public function index()
+	{
+		return view('frontend.pages.product.cart');
+	}
+
+
+    public function store(Request $request)
+    {
+    	$request->validate([
+    		'product_id' => 'required',   		
+    	]);
+
+    	if (Auth::check()) {
+    		
+		    $cart = new Cart;
+			$cart->user_id = Auth::user()->id;
+			$cart->ip_address = request()->getClientIp();
+			$cart->product_id = $request->product_id;
+			$cart->product_quantity = $request->qtybutton;
+
+            $product = Product::find($request->product_id);
+            if (!is_null($product)) {
+                if ($product->offer_price > 0) {
+                    $cart->price = $product->offer_price*$request->qtybutton;
+                }else {
+                     $cart->price = $product->price*$request->qtybutton;
+                }
+                
+            }
+            else {
+                session()->flash('success',"We couldn't find this product.");
+                return back();
+            }
+			
+
+    	}
+    	else{
+
+		    $cart = new Cart;
+			$cart->ip_address = request()->getClientIp();
+			$cart->product_id = $request->product_id;
+			$cart->product_quantity = $request->qtybutton;
+            $product = Product::find($request->product_id);
+            if (!is_null($product)) {
+                if ($product->offer_price > 0) {
+                    $cart->price = $product->offer_price*$request->qtybutton;
+                }else {
+                     $cart->price = $product->price*$request->qtybutton;
+                }
+                
+            }
+            else {
+                session()->flash('success',"We couldn't find this product.");
+                return back();
+            }
+			
+		 
+    	}
+
+    		if ($request->attribute_options) {
+    		 	$cart->attribute_options = serialize($request->attribute_options);
+    		}
+
+    	
+
+    	
+
+
+	   $cart->save();
+
+	   return back();
+
+    }
+
+    public function updatequantity($id, $action)
+    {
+    	$cart = Cart::find($id);
+
+    	if ($action == "plus") {
+		$cart->increment('product_quantity');
+        if ($cart->product->offer_price > 0) {
+            $cart->price = $cart->price + $cart->product->offer_price;
+        }else {
+            $cart->price = $cart->price + $cart->product->price;
+        }
+		
+    	}
+    	
+    	if ($cart->price != 0) {
+	    	if ($action == "minus") {
+	    		$cart->decrement('product_quantity');
+                if ($cart->product->offer_price > 0) {
+                    $cart->price = $cart->price - $cart->product->offer_price;
+                }else {
+                    $cart->price = $cart->price - $cart->product->price;
+                }
+	    		
+	    	}
+
+	    	$cart->save();
+	    	return back();
+    	}
+    	else {
+    		return back();
+    	}
+    	
+    	
+    }
+
+
+    public function addShipping($city)
+    {
+        $shipping = Shipping::find(1);
+
+        if (Auth::guard('web')->check()) {
+           $carts = Cart::where('user_id', Auth::guard('web')->id)->get();
+           foreach ($carts as $cart) {
+                $cart_update = Cart::find($cart->id);
+               if ($city == "Dhaka") {
+                   $cart_update->shipping_cost = $shipping->inside_dhaka;
+               }else {
+                    $cart_update->shipping_cost = $shipping->outside_dhaka;
+               }
+               $cart_update->save();
+           }
+           
+
+           return back();
+        }
+        else {
+
+            $carts = Cart::where('ip_address', request()->getClientIp())->get();
+            
+           foreach ($carts as $cart) {
+                $cart_update = Cart::find($cart->id);
+               if ($city == "Dhaka") {
+                   $cart_update->shipping_cost = $shipping->inside_dhaka;
+               }else {
+                    $cart_update->shipping_cost = $shipping->outside_dhaka;
+               }
+               $cart_update->save();
+           }
+
+               return back();
+        }
+
+        
+        
+    }
+
+    public function delete($id)
+    {
+        $cart = Cart::find($id);
+        if (!is_null($cart)) {
+            $cart->delete();
+
+            return back();
+        }
+    }
+}

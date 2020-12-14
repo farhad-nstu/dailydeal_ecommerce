@@ -1,0 +1,237 @@
+<?php
+
+namespace App\Http\Controllers\Frontend;
+
+use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+use Illuminate\Support\Str;
+use Illuminate\Http\File;
+use Illuminate\Support\Facades\Storage;
+use App\Order;
+use App\Cart;
+use App\Shipping;
+use App\City;
+use App\Product;
+use App\ProductImage;
+use Auth;
+use DB;
+use App\Library\SslCommerz\SslCommerzNotification;
+
+class OrdersController extends Controller
+{
+    public function store(Request $request)
+    {
+    	global $subtotal;
+    	$request->validate([
+    		'phone_number' => 'required',
+    		'shipping_address' => 'required',
+    		'city_name' => 'required',
+    		'name' => 'required'
+    		
+    	]);
+
+
+    	$cities = City::orderBy('priority', 'asc')->get();
+		$shippingcharge = Shipping::find(1);
+
+		$carts = new Cart;
+		$carts = $carts->carts();
+		$total_price = 0;
+
+		foreach ($carts as $cart) {
+			$total_price = $total_price + $cart->price;
+		}
+
+		if ($request->city_name == 'Dhaka' ) {
+
+			$subtotal = $total_price + $shippingcharge->inside_dhaka;
+		}
+		else {
+			$subtotal = $total_price + $shippingcharge->outside_dhaka;
+		}
+
+		
+		$order_trx_id = uniqid();
+
+		foreach ($carts as $cart) {
+			$order = new Order;
+
+
+			if (Auth::guard('web')->check()) {
+				$order->user_id = Auth::guard('web')->user()->id;
+				$order->ip_address = request()->getClientIp();
+				$order->name =Auth::guard('web')->user()->name;
+				$order->phone =Auth::guard('web')->user()->phone_number;
+
+	    	}elseif (Auth::guard('vendor')->check()) {
+				$order->vendor_id_buy = Auth::guard('vendor')->user()->id;
+				$order->ip_address = request()->getClientIp();
+				$order->name = Auth::guard('vendor')->user()->name;
+				$order->phone = Auth::guard('vendor')->user()->phone;
+
+	    	}
+	    	else{
+
+				$order->ip_address = request()->getClientIp();
+				$order->name = $request->name;
+				$order->phone = $request->phone_number;
+	    	}
+			
+			
+
+			$order->price = $cart->price;
+			$order->amount = $subtotal;
+			$order->message = $request->message;
+	    	$order->city_name = $request->city_name;
+	    	$order->shipping_address = $request->shipping_address;
+	    	$order->payment_method = $request->payment_mentod;
+
+	    	$order->product_id = $cart->product->id;
+	    	$order->vendor_id = $cart->product->vendor_id;
+	    	$order->product_title = $cart->product->title;
+	    	$order->attribute_options = $cart->attribute_options;
+	    	$order->product_quantity = $cart->product_quantity;
+	    	$product_image = ProductImage::where('product_id', $cart->product->id)->first();
+
+	    	if (!is_null($product_image)) {
+	    		\File::copy('images/'.$product_image->image, 'images/order/'.$product_image->image);
+	    		$order->product_image = $product_image->image;
+	    	}
+	    	else {
+	    		$order->product_image = Null;
+	    	}
+
+	    	$order_last = Order::orderBy('id', 'desc')->first();
+
+	    	$order_id_start = 2349345305;
+
+	    	$order_tracking = $order_id_start + $order_last->id;
+
+	    	$order->tracking_id = $order_tracking;
+
+	    	$order->transaction_id = $order_trx_id;
+
+	    	//Payment
+	    	if ($request->payment_mentod == 0) {
+	    		$order->status = "Processing";
+	    		$order->delivery_status = "Processing";
+	    		$order->payment_method = "Cash On Deliver";
+	    	}else {
+	    		$order->status = "Pending";
+	    		$order->payment_method = "Online Payment";
+	    	}
+
+	    	$order->save();
+
+	    	}
+
+	    	
+			
+
+			//sslcommerze payment gateway start
+					
+				if ($request->payment_mentod == 1) {
+					$post_data = array();
+			        $post_data['total_amount'] = $subtotal; # You cant not pay less than 10
+			        $post_data['currency'] = "BDT";
+			        $post_data['tran_id'] = $order_trx_id; // tran_id must be unique
+
+			        # CUSTOMER INFORMATION
+			        $post_data['cus_name'] = $request->name;
+			        $post_data['cus_email'] = 'customer@mail.com';
+			        $post_data['cus_add1'] = 'Customer Address';
+			        $post_data['cus_add2'] = "";
+			        $post_data['cus_city'] = "";
+			        $post_data['cus_state'] = "";
+			        $post_data['cus_postcode'] = "";
+			        $post_data['cus_country'] = "Bangladesh";
+			        $post_data['cus_phone'] = $request->phone_number;
+			        $post_data['cus_fax'] = "";
+
+			        # SHIPMENT INFORMATION
+			        $post_data['ship_name'] = "Store Test";
+			        $post_data['ship_add1'] = "Dhaka";
+			        $post_data['ship_add2'] = "Dhaka";
+			        $post_data['ship_city'] = "Dhaka";
+			        $post_data['ship_state'] = "Dhaka";
+			        $post_data['ship_postcode'] = "1000";
+			        $post_data['ship_phone'] = "";
+			        $post_data['ship_country'] = "Bangladesh";
+
+			        $post_data['shipping_method'] = "NO";
+			        $post_data['product_name'] = "Computer";
+			        $post_data['product_category'] = "Goods";
+			        $post_data['product_profile'] = "physical-goods";
+
+			        # OPTIONAL PARAMETERS
+			        $post_data['value_a'] = "ref001";
+			        $post_data['value_b'] = "ref002";
+			        $post_data['value_c'] = "ref003";
+			        $post_data['value_d'] = "ref004";
+					
+					foreach ($carts as $cart_id) {
+						$cart_find = Cart::find($cart_id->id);
+						$cart_find->status = 1;
+						$cart_find->save();
+
+						$product = Product::find($cart_find->product_id);
+						$update_quantity = $product->quantity - $cart_find->product_quantity;
+						$product->quantity = $update_quantity;
+						$product->save();
+						
+					}
+			 
+
+			        $sslc = new SslCommerzNotification();
+			        # initiate(Transaction Data , false: Redirect to SSLCOMMERZ gateway/ true: Show all the Payement gateway here )
+			        $payment_options = $sslc->makePayment($post_data, 'hosted');
+
+			        if (!is_array($payment_options)) {
+			            print_r($payment_options);
+			            $payment_options = array();
+			        }
+
+		    }else {
+		    	foreach ($carts as $cart_id) {
+						$cart_find = Cart::find($cart_id->id);
+						$cart_find->status = 1;
+						$cart_find->save();
+
+						$product = Product::find($cart_find->product_id);
+						$update_quantity = $product->quantity - $cart_find->product_quantity;
+						$product->quantity = $update_quantity;
+						$product->save();
+						
+					}
+					
+		    	return redirect()->route('order.susscess');
+		    }
+    	
+    	//Payment gateway end
+
+    	
+    	
+
+    	/*$last_order_id = Order::orderBy('id', 'desc')->first();
+
+    	echo $last_order_id->id;
+
+    	$carts->order_id = $order->id;*/
+
+
+
+	}
+
+	public function success()
+	{
+		if (Auth::check()) {
+    		$order_last = Order::orderBy('id', 'desc')->where('user_id', Auth::user()->id)->first();
+    	}
+    	else {
+    		$order_last = Order::orderBy('id', 'desc')->where('ip_address', request()->getClientIp())->first();
+    	}
+
+    	return view('frontend.pages.product.order',compact('order_last'));
+
+	}
+}

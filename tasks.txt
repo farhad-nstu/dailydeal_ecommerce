@@ -1,0 +1,6 @@
+#Add image old image show and remove option where need
+In General
+--Popular Product Slider
+--Product Page Banner
+--Banner Manager
+--

@@ -1,0 +1,258 @@
+@php
+use App\Category;
+use App\Review;
+use App\PopularProductSlider;
+use App\PopularProductSliderImage;
+use App\TestimonialLeft;
+use App\Testimonial;
+use App\Banner;
+use App\SectionSwitch;
+use App\BanglaConverter;
+@endphp
+@extends('frontend.layouts.home')
+
+@section('content')
+
+<main class="main">
+	@if(SectionSwitch::find(7)->action == 1)
+            <div class="home-slider owl-carousel owl-theme">
+
+            	@foreach($sliders as $slider)
+                <div class="home-slide">
+                    <div class="slide-bg owl-lazy"  data-src="{{ asset('images/sliders/'.$slider->slider_image) }}"></div><!-- End .slide-bg -->
+                    <div class="home-slide-content">
+                        <h2 style="color: {{$slider->title_color}};">
+											
+						@if(Config::get('app.locale') == 'bd')
+
+			            @if(!is_null($slider->title_bd))
+			                {{ $slider->title_bd }}
+			            @else
+			                {{ $slider->title }}
+			            @endif
+
+				        @elseif(Config::get('app.locale') == 'en')
+				            {{ $slider->title }}
+				        @endif
+						</h2>
+
+                        <span style="color: {{$slider->description_color}};">
+
+											@if(Config::get('app.locale') == 'bd')
+
+								            @if(!is_null($slider->description_bd))
+								                {{ $slider->description_bd }}
+								            @else
+								                {{ $slider->description }}
+								            @endif
+
+									        @elseif(Config::get('app.locale') == 'en')
+									            {{ $slider->description }}
+									        @endif
+										</span>
+
+                        <a href="{{$slider->button_link}}" class="btn" role="button" style="background-color: {{$slider->button_color}};">
+                        	@if(Config::get('app.locale') == 'bd')
+
+				            @if(!is_null($slider->button_text_bd))
+				                {{ $slider->button_text_bd }}
+				            @else
+				                {{ $slider->button_text }}
+				            @endif
+
+					        @elseif(Config::get('app.locale') == 'en')
+					            {{ $slider->button_text }}
+					        @endif
+                        </a>
+                    </div><!-- End .home-slide-content -->
+                </div><!-- End .home-slide -->
+                @endforeach
+                
+            </div><!-- End .home-slider -->
+    @endif
+
+    @if(SectionSwitch::find(5)->action == 1)
+            <section class="container-fluid">
+                <div class="section-header mt-6">
+                    <h2 class="section-title">Shop By Category</h2>
+                    <h3 class="section-subtitle">Browse in all our categories</h3>
+                </div>
+
+                <div class="row row-sm mb-2">
+
+                @php
+					$categories = Category::orderBy('name', 'asc')->get();
+				@endphp
+
+				@foreach($categories as $category)
+                    <div class="col-6 col-sm-4 col-lg-3 col-xl-2">
+                        <div class="product-category">
+                            <a href="{{route('category.show',$category->slug)}}">
+                                <figure>
+                                    <img src="
+                                    @if(!is_null($category->thumbnail))
+                                    {{asset('images/categories/'.$category->thumbnail)}}
+                                    @else
+                                    {{asset('images/categories/no-img.jpg')}}
+                                    @endif
+                                    ">
+                                </figure>
+                                <div class="category-content">
+                                    <h3>
+                                    @if(Config::get('app.locale') == 'bd')
+
+							            @if(!is_null($category->name_bd))
+							                {{ $category->name_bd }}
+							            @else
+							                {{ $category->name }}
+							            @endif
+
+							        @elseif(Config::get('app.locale') == 'en')
+							            {{ $category->name }}
+							        @endif
+                                    </h3>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                @endforeach
+
+                </div>
+            </section>
+    @endif
+
+    @if(SectionSwitch::find(6)->action == 1)
+            <section class="bg-grey pt-3 pb-3">
+                <div class="container-fluid mt-6 mb-5">
+                    <div class="row row-sm">
+
+                    @php
+						$popularproductsliders = PopularProductSlider::orderBy('serial', 'asc')->get();
+					@endphp
+
+					@if(!is_null($popularproductsliders))
+						@foreach($popularproductsliders as $popularproductslider)
+						@php
+                    		$image = PopularProductSliderImage::where('popular_product_slider_id', $popularproductslider->id)->first();
+                    	@endphp
+	                    	@if(!is_null($image))
+		                        <div class="col-6 col-lg-3">
+		                        	<a href="{{$popularproductslider->url}}">
+		                            <div class="home-banner">
+		                                <img src="{{asset('images/'.$image->image)}}">
+		                                <div class="home-banner-content content-left-bottom">
+		                                    
+		                                </div>
+		                            </div>
+		                        	</a>
+		                        </div>
+		                    @endif
+	                    @endforeach
+                    @endif
+                        
+                    </div>
+                </div>
+            </section>
+    @endif
+
+
+    @if(SectionSwitch::find(1)->action == 1)
+            <section class="container-fluid">
+                <div class="section-header mt-6">
+                    <h2 class="section-title">Popular Products</h2>
+                    <h3 class="section-subtitle">Check all our popular products</h3>
+                </div>
+
+                <div class="row row-sm mb-10">
+                	@if(!is_null($feature_products))
+                	@foreach($feature_products as $product)
+                    <div class="col-6 col-md-4 col-lg-3 col-xl-2">
+                        <div class="product-default inner-quickview inner-icon">
+                            <figure>
+                                <a href="{{route('product.show', $product->slug)}}">
+                                	@php
+                                        $i = 1;
+                                    @endphp
+                                   @if(!is_null($product->images))
+                                    @foreach($product->images as $image)
+                                        @if($i>0)
+                                            <img src="{{ asset('images/'.$image->image) }}">
+                                        @endif
+                                    @php
+                                        $i--;
+                                    @endphp
+                                    @endforeach
+                                    <img src="{{asset('images/no-img.jpg')}}">
+                                    @endif
+                                    
+                                </a>
+                                <div class="label-group">
+                                	@if($product->offer_price > 0)
+                                    <span class="product-label label-cut">
+
+                                	
+                                        
+
+                                    @php
+                                        $off_amount = $product->price-$product->offer_price;
+                                        $off_parcent = intval(($off_amount/$product->price)*100);
+                                    @endphp
+
+                                    
+                                    @if(Config::get('app.locale') == 'bd')
+
+                                        @php
+                                          echo BanglaConverter::en2bn($off_parcent);
+                                        @endphp
+
+                                    @elseif(Config::get('app.locale') == 'en')
+                                        {{$off_parcent}}
+                                    @endif
+                                        
+                                        
+                                        
+                                     %   
+
+                                     OFF</span>@endif
+                                </div>
+                                
+                            </figure>
+                            <div class="product-details">
+                                
+                                <h2 class="product-title">
+                                    <a href="{{route('product.show', $product->slug)}}">
+                                    	@if(Config::get('app.locale') == 'bd')
+
+							            @if(!is_null($product->title_bd))
+							                {{ $product->title_bd }}
+							            @else
+							                {{ $product->title }}
+							            @endif
+
+    							        @elseif(Config::get('app.locale') == 'en')
+    							            {{ $product->title }}
+    							        @endif
+                                    </a>
+                                </h2>
+                                <div class="ratings-container">
+                                    @include('frontend.layouts.partials.starreview')
+                                </div><!-- End .product-container -->
+                                <div class="price-box">
+                                	@include('frontend.layouts.partials.offer-parcent')
+                                    
+                                </div><!-- End .price-box -->
+                            </div><!-- End .product-details -->
+                        </div>
+                    </div>
+                    @endforeach
+                    @endif
+                    
+                </div>
+            </section>
+
+    @endif
+        </main><!-- End .main -->
+
+
+
+@endsection

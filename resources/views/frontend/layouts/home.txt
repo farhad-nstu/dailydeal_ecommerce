@@ -1,0 +1,1294 @@
+@php
+use App\General;
+use App\Category;
+use Harimayco\Menu\Models\Menus;
+use Harimayco\Menu\Models\MenuItems;
+use App\Product;
+Use App\Cart;
+Use App\BanglaConverter;
+use App\SectionSwitch;
+use App\Counter;
+use App\User;
+use App\FrontendColor;
+use Illuminate\Support\Facades\Session;
+
+$general = General::find(1);
+$categories = Category::orderBy('name', 'asc')->get();
+$products = Product::orderBy('id', 'desc')->get();
+
+$carts = new Cart;
+$carts = $carts->carts();
+
+$carts = Session::get('product');
+
+
+$main_menu = Menu::getByName('Main Menu');
+$primary_menu = Menu::getByLocation('primary');
+$mobile_menu = Menu::getByLocation('mobile');
+$footer_right_menu = Menu::getByLocation('footer_right');
+$footer_left_menu = Menu::getByLocation('footer_left');
+
+$color = FrontendColor::find(1);
+
+@endphp
+
+<!DOCTYPE html>
+
+<html lang="{{app()->getLocale()}}">
+	<head>
+		<title>{{$general->meta_name}}</title>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<meta name="description" content="{{$general->meta_description}}">
+		<meta name="keywords" content="{{$general->meta_name}}">
+		
+		
+		
+		<link rel="stylesheet" type="text/css" href="{{ asset('assets/css/bootstrap.min.css') }}">
+		<link rel="stylesheet" type="text/css" href="{{ asset('assets/css/all.min.css') }}">
+		<link rel="stylesheet" type="text/css" href="{{ asset('assets/flaticon/flaticon.css') }}">
+		<link rel="stylesheet" type="text/css" href="{{ asset('assets/css/swiper.min.css') }}">
+		<link rel="stylesheet" type="text/css" href="{{ asset('assets/css/slick.css') }}">
+		<link rel="stylesheet" type="text/css" href="{{ asset('assets/css/slick-theme.css') }}">
+		<link rel="stylesheet" href="{{asset('css/notifIt.min.css')}}">
+		<link rel="stylesheet" type="text/css" href="{{ asset('assets/css/style.css') }}">
+		
+		@yield('css')
+		@include('frontend.layouts.partials.font')
+
+		<style type="text/css">
+			.fa, .fab, .fal, .far, .fas {
+			     line-height: unset;
+			}
+
+			
+
+		#stiky {
+			
+		    top: 0;
+		    width: 100%;
+		    z-index: 9999;
+		}
+
+		/* For Category menu */
+
+		.hb_left_bottom {
+		    border-radius: 0;
+		    height: 100vh;
+		    position: fixed;
+		    z-index: 10;
+    		margin-top: 60px;
+		}
+		.header_container {
+			padding: 0 20px;
+		}
+
+		.header-bottom .menu_area .main-menu ul li a.active, .header-bottom .menu_area .main-menu ul li a:hover {
+		    background: {{$color->primary}};
+		}
+
+		.wish_list span {
+		    background: {{$color->primary}};
+		    
+		}
+
+		.banner-item .banner-content.bg-1 .content-area h2 {
+		    color: {{$color->primary}};
+		}
+
+		.banner .banner-slider .banner-item .banner-content .content-area .btn {
+		    background: {{$color->primary}};
+		}
+
+		.product-section.style-2 .section-wrapper .product_item .product_inner:hover .product_content .btn {
+		    background: {{$color->primary}};
+		    color: #fff;
+		    border-color: {{$color->primary}};
+		}
+
+		.product-section.style-2 .section-wrapper .product_item .product_inner:hover .product_content h6 a
+		{
+			color: {{$color->primary}};
+		}
+
+		.shop-section .section-wrapper .post_item .post_item_inner .post_thumb .post_icon a:hover {
+		    background: {{$color->primary}};
+		}
+		.cart a span {
+	    background: {{$color->primary}};
+		}
+
+		.banner .banner-slider .banner-item .banner-content.bg-1 .content-area h2 {
+		    color: {{$color->primary}};
+		}
+
+		.shop-section .section-wrapper .post_item .post_item_inner:hover .post_content .title {
+		    color: {{$color->primary}};
+		}
+
+		.scrollToTop {
+		    background: {{$color->primary}};
+		}
+
+		.footer-top .ft_item.ft_bg_item .ft_flow .ft_body ul li .ft_icon i {
+		    color: {{$color->primary}};
+		}
+
+		.btn-primary {
+			background-color: {{$color->primary}};
+		}
+
+		body, button, input, select, textarea {
+		    color: {{$color->secondary}};
+		}
+
+		::placeholder { /* Chrome, Firefox, Opera, Safari 10.1+ */
+		  color: {{$color->secondary}};
+		  opacity: 1; /* Firefox */
+		}
+
+		:-ms-input-placeholder { /* Internet Explorer 10-11 */
+		  color: {{$color->secondary}};
+		}
+
+		::-ms-input-placeholder { /* Microsoft Edge */
+		  color: {{$color->secondary}};
+		}
+
+		.header-top .ht_right .ht_r_right ul li a {
+		    color: {{$color->secondary}};
+		}
+
+		.header-bottom .menu_area .main-menu ul li a {
+		    color: {{$color->secondary}};
+		}
+
+		h1, h2, h3, h4, h5, h6 {
+		    color: {{$color->secondary}};
+		}
+
+		.product-section.style-2 .section-wrapper .product_item .product_inner .product_content .btn {
+		    color: {{$color->secondary}};
+		}
+
+		.product-section .section-wrapper .product_item .product_inner .product_content h6 a {
+		    color: {{$color->secondary}};
+		}
+
+		.shop-section .section-wrapper .post_item .post_item_inner .post_content .title {
+		    color: {{$color->secondary}};
+		}
+
+		p {
+		    color: {{$color->secondary}};
+		}
+
+		.testimonial .testi_right .testi_slider .testi_item .testi_content span {
+		    color:{{$color->secondary}};
+		}
+
+		.header-bottom .menu_area .author_cart_area .ht_icon_all .ht_icon_all_option .ht_option a {
+		    color: {{$color->secondary}};
+		}
+
+		.testimonial .testi_right .testi_slider .testi_item .testi_content p sup {
+  			color:{{$color->primary}};
+		}
+
+		.testimonial .testi_right .testi_slider_pagination .swiper-pagination-bullet-active {
+		    background: {{$color->primary}};
+		}
+
+		.footer-top .ft_item.ft_bg_item .ft_flow .ft_body ul li .ft_content p, .footer-top .ft_item.ft_bg_item .ft_flow .ft_body ul li .ft_content a {
+		    color: {{$color->secondary}};
+		}
+
+		.hb_left_bottom .main_menu ul li a {
+		    color: {{$color->secondary}};
+		}
+		.header-bottom .logo_area .menu_bar i {
+		    color: {{$color->secondary}}
+		}
+		.header-top {
+		    background: {{$color->tertiary}};
+		}
+
+		.header-bottom .menu_area .author_cart_area .ht_icon_all .ht_icon_all_option .ht_option {
+		    background: {{$color->tertiary}};
+		}
+
+		.cus_vis_section .section-wrapper .cus_vis_items {
+		    background: {{$color->tertiary}};
+		}
+
+
+		.footer-top {
+		    background: {{$color->quaternary}};
+		}
+
+		.footer-bottom {
+		    background: {{$color->fifth}};
+		}
+
+		.header-top .ht_right .ht_r_left .ht_serch_all button {
+		    background: {{$color->fifth}};
+		}
+
+		body {
+		    background: {{$color->body}};
+		}
+
+		.banner {
+		    background: {{$color->body}};
+		}
+
+		
+
+		</style>
+	</head>
+
+	<body>
+		@php
+			
+		@endphp
+		<!-- hide menu option start here -->
+		<div class="hb_left_bottom"><div class="menu_bar d-sm-block d-md-none"><i class="fas fa-window-close menu_close" style="
+		    font-size: 28px;
+		    float: right;
+		    margin-top: -20px;
+		    margin-right: -14px;
+		"></i></div>
+			<div class="hb_scroll_bottom scrollbar">
+				{{-- <div class="offer_menu">
+					<ul>
+						<li><a href="#">Offers</a><span>3</span></li>
+						<li><a href="#">Discount <span class="new_offer">New</span></a><span>4</span></li>
+						<li><a href="#">Bundle</a><span>7</span></li>
+					</ul>
+				</div> --}}
+				<div class="main_menu">
+					<ul class="d-xl-block">
+						<li class="d-xl-none">
+							<a href="JavaScript:Void(0);">Menu List</a>
+							<ul>
+								
+									@if($mobile_menu)
+									@foreach($mobile_menu as $menu)
+
+									<li><a href="{{ $menu['link'] }}">
+										@if(Config::get('app.locale') == 'bd')
+
+	                                        @if(!is_null($menu['label_bd']))
+	                                            {{ $menu['label_bd'] }}
+	                                        @else
+	                                            {{ $menu['label'] }}
+	                                        @endif
+
+	                                    @elseif(Config::get('app.locale') == 'en')
+	                                        {{ $menu['label'] }}
+	                                    @endif
+										
+
+									</a>
+									@if( $menu['child'] )
+					                <ul class="sub-menu">
+					                    @foreach( $menu['child'] as $child )
+					                        <li class=""><a href="{{ $child['link'] }}" title="">{{ $child['label'] }}</a></li>
+					                    @endforeach
+					                </ul><!-- /.sub-menu -->
+					                @endif
+								</li>
+									@endforeach
+									@endif
+								
+							</ul>
+						</li>
+
+ @foreach(App\Category::orderBy('name','asc')->whereNull('parent_id')->get() as $cateogry)
+      
+
+
+      <li class="@if(Request::url() === route('category.show',$cateogry->slug))
+		    open
+		@endif
+
+		@foreach(App\Category::orderBy('name','asc')->where('parent_id', $cateogry->id)->get() as $child)
+	      	@if(Request::url() === route('category.show',$child->slug))
+			    open
+			@endif
+	      @endforeach
+
+		" id="parent_category">
+		<a href="{{route('category.show',$cateogry->slug)}}"><img src="{{asset('images/categories/'.$cateogry->image)}}" alt="meni-icon" width="30px">
+			@if(Config::get('app.locale') == 'bd')
+
+	            @if(!is_null($cateogry->name_bd))
+	                {{ $cateogry->name_bd }}
+	            @else
+	                {{ $cateogry->name }}
+	            @endif
+
+	        @elseif(Config::get('app.locale') == 'en')
+	            {{ $cateogry->name }}
+	        @endif
+		 
+
+		</a>
+		<ul class="category_child" @if(Request::url() === route('category.show',$cateogry->slug))
+			    style="display: block;" 
+			@endif>
+			@foreach(App\Category::orderBy('name','asc')->where('parent_id', $cateogry->id)->get() as $child)
+		      <li><a href="{{route('category.show',$child->slug)}}">
+		      	@if(Config::get('app.locale') == 'bd')
+
+	            @if(!is_null($child->name_bd))
+	                {{ $child->name_bd }}
+	            @else
+	                {{ $child->name }}
+	            @endif
+
+		        @elseif(Config::get('app.locale') == 'en')
+		            {{ $child->name }}
+		        @endif
+		      	
+		      </a></li>
+		      @endforeach
+		</ul>
+	</li>
+      @endforeach
+
+						{{-- <li>
+							<a href="JavaScript:Void(0);"><img src="{{asset('assets/images/header/menu/01.png')}}" alt="meni-icon"> Beauty Care</a>
+							<ul>
+								<li><a href="#">Beauty Care 1</a></li>
+								<li><a href="#">Beauty Care 2</a></li>
+								<li><a href="#">Beauty Care 3</a></li>
+								<li><a href="#">Beauty Care 4</a></li>
+								<li><a href="#">Beauty Care 5</a></li>
+							</ul>
+						</li>
+
+
+
+
+						<li>
+							<a href="JavaScript:Void(0);"><img src="{{asset('assets/images/header/menu/02.png')}}" alt="meni-icon"> Bakery</a>
+							<ul>
+								<li><a href="#">Bakery 1</a></li>
+								<li><a href="#">Bakery 2</a></li>
+								<li><a href="#">Bakery 3</a></li>
+								<li><a href="#">Bakery 4</a></li>
+								<li><a href="#">Bakery 5</a></li>
+							</ul>
+						</li>
+						<li>
+							<a href="JavaScript:Void(0);"><img src="{{asset('assets/images/header/menu/03.png')}}" alt="meni-icon"> Consumer</a>
+							<ul>
+								<li><a href="#">Consumer 1</a></li>
+								<li><a href="#">Consumer 2</a></li>
+								<li><a href="#">Consumer 3</a></li>
+								<li><a href="#">Consumer 4</a></li>
+								<li><a href="#">Consumer 5</a></li>
+							</ul>
+						</li>
+						<li>
+							<a href="JavaScript:Void(0);"><img src="{{asset('assets/images/header/menu/04.png')}}" alt="meni-icon"> Electronics</a>
+							<ul>
+								<li><a href="#">Electronics 1</a></li>
+								<li><a href="#">Electronics 2</a></li>
+								<li><a href="#">Electronics 3</a></li>
+								<li><a href="#">Electronics 4</a></li>
+								<li><a href="#">Electronics 5</a></li>
+							</ul>
+						</li>
+						<li>
+							<a href="JavaScript:Void(0);"><img src="assets/images/header/menu/05.png" alt="meni-icon"> Food</a>
+							<ul>
+								<li><a href="#">Food 1</a></li>
+								<li><a href="#">Food 2</a></li>
+								<li><a href="#">Food 3</a></li>
+								<li><a href="#">Food 4</a></li>
+								<li><a href="#">Food 5</a></li>
+							</ul>
+						</li>
+						<li>
+							<a href="JavaScript:Void(0);"><img src="assets/images/header/menu/06.png" alt="meni-icon"> Vehicle Essentails</a>
+							<ul>
+								<li><a href="#">Vehicle Essentails 1</a></li>
+								<li><a href="#">Vehicle Essentails 2</a></li>
+								<li><a href="#">Vehicle Essentails 3</a></li>
+								<li><a href="#">Vehicle Essentails 4</a></li>
+								<li><a href="#">Vehicle Essentails 5</a></li>
+							</ul>
+						</li>
+						<li>
+							<a href="JavaScript:Void(0);"><img src="assets/images/header/menu/07.png" alt="meni-icon"> Cleaning</a>
+							<ul>
+								<li><a href="#">Cleaning 1</a></li>
+								<li><a href="#">Cleaning 2</a></li>
+								<li><a href="#">Cleaning 3</a></li>
+								<li><a href="#">Cleaning 4</a></li>
+								<li><a href="#">Cleaning 5</a></li>
+							</ul>
+						</li>
+						<li>
+							<a href="JavaScript:Void(0);"><img src="assets/images/header/menu/08.png" alt="meni-icon"> Health</a>
+							<ul>
+								<li><a href="#">Health 1</a></li>
+								<li><a href="#">Health 2</a></li>
+								<li><a href="#">Health 3</a></li>
+								<li><a href="#">Health 4</a></li>
+								<li><a href="#">Health 5</a></li>
+							</ul>
+						</li>
+						<li>
+							<a href="JavaScript:Void(0);"><img src="assets/images/header/menu/09.png" alt="meni-icon"> Furniture</a>
+							<ul>
+								<li><a href="#">Furniture 1</a></li>
+								<li><a href="#">Furniture 2</a></li>
+								<li><a href="#">Furniture 3</a></li>
+								<li><a href="#">Furniture 4</a></li>
+								<li><a href="#">Furniture 5</a></li>
+							</ul>
+						</li>
+						<li>
+							<a href="JavaScript:Void(0);"><img src="assets/images/header/menu/10.png" alt="meni-icon"> Baby Care</a>
+							<ul>
+								<li><a href="#">Baby Care 1</a></li>
+								<li><a href="#">Baby Care 2</a></li>
+								<li><a href="#">Baby Care 3</a></li>
+								<li><a href="#">Baby Care 4</a></li>
+								<li><a href="#">Baby Care 5</a></li>
+							</ul>
+						</li> --}}
+					</ul>
+
+					
+				</div>
+				{{-- <div class="view_all">
+					<a href="#">View All</a>
+				</div>
+				<div class="main_btn">
+					<a  class="btn" href="#">Become a Retailor</a>
+				</div> --}}
+			</div>
+		</div>
+		<!-- hide menu option ending here -->
+
+		<!-- singin & loging part start here -->
+		{{-- <div class="sign_login scrollbar">
+			<div class="sign_login_close"></div>
+			<div class="container">
+				<div class="box_sign_login">
+					<div class="Close_sing" title='close-btn'><i class="fas fa-times"></i></div>
+					<ul class="log_sign_nav">
+						<li class="sign_show active" data-target="sign-show">Sign Up</li>
+						<li class="login_show" data-target="login-show">Login</li>
+					</ul>
+					<div class="log_sign_content sign-show">
+						<div class="log_in">
+							<ul class="log_in_nav">
+								<li class="retailer_show active" data-target="retailer-show"><i class="fas fa-check"></i> Retailer</li>
+								<li class="customer_show" data-target="customer-show"><i class="fas fa-check"></i> Customer</li>
+							</ul>
+							<div class="log_in_content retailer-show">
+								<div class="retailer_content">
+									<div class="thumb">
+										<img src="assets/images/header/icon/03.png" alt="header">
+										<span>Retailer Info</span>
+									</div>
+									<p>I am a Retailer of ABL</p>
+								</div>
+								<div class="customer_content">
+									<div class="thumb">
+										<img src="assets/images/header/icon/03.png" alt="header">
+										<span>Customer Info</span>
+									</div>
+									<p>I am a Customer of ABL</p>
+								</div>
+							</div>
+							<div class="facebook_login">
+								<a href="#" class="btn"><i class="fab fa-facebook-f"></i><span>Login with</span> Facebook</a>
+							</div>
+							<div class="login_form">
+								<h5><span>Or</span></h5>
+								<div class="user_pass_from">
+									<div class="input_one">
+										<i class="fas fa-envelope"></i>
+										<input type="text" placeholder="Enter Username" name="uname" required>
+									</div>
+									<div class="input_two">
+										<i class="fas fa-lock"></i>
+										<input type="password" placeholder="Enter Password" name="psw" required>
+									</div>
+									<div class="remember_forget">
+										<lebal><input type="checkbox" checked="checked" name="remember"> Remember me</lebal>
+										<span class="psw">Forgot <a href="#">password?</a></span>
+									</div>
+									<button type="submit">Login</button>
+									<p>Don’t Have Account? <a href="#">Sign Up</a></p>
+								</div>
+							</div>
+						</div>
+
+						<div class="sign_in">
+							<ul class="sign_in_nav">
+								<li class="retailer_show active" data-target="retailer-show"><i class="fas fa-check"></i> Retailer</li>
+								<li class="customer_show" data-target="customer-show"><i class="fas fa-check"></i> Customer</li>
+							</ul>
+							<div class="sign_in_content retailer-show">
+								<div class="retailer_content">
+									<div class="thumb">
+										<img src="assets/images/header/icon/03.png" alt="header">
+										<span>Retailer Info</span>
+									</div>
+									<p>I am a Retailer of ABL</p>
+								</div>
+								<div class="customer_content">
+									<div class="thumb">
+										<img src="assets/images/header/icon/03.png" alt="header">
+										<span>Customer Info</span>
+									</div>
+									<p>I am a Customer of ABL</p>
+								</div>
+							</div>
+							<div class="facebook_login">
+								<a href="#" class="btn"><i class="fab fa-facebook-f"></i><span>Login with</span> Facebook</a>
+							</div>
+							<div class="login_form">
+								<h5><span>Or</span></h5>
+								<div class="user_pass_from">
+									<div class="input_one">
+										<i class="fas fa-user"></i>
+										<input type="text" placeholder="Enter Username" name="uname" required>
+									</div>
+									<div class="input_two">
+											<i class="fas fa-envelope"></i>
+										<input type="email" placeholder="Enter Email" name="email" required>
+									</div>
+									<div class="input_three">
+										<i class="fas fa-mobile-alt"></i>
+										<input type="number" placeholder="+880" name="number" required>
+									</div>
+									<div class="input_four">
+										<i class="fas fa-lock"></i>
+										<input type="password" placeholder="Enter Password" name="psw" required>
+									</div>
+									<div class="remember_forget">
+										<p>By creating an account you will be up to date on an order's status, and keep track of the orders</p>
+									</div>
+									<button type="submit">Sign Up</button>
+									<p>Don’t Have Account? <a href="#">Sign In</a></p>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div> --}}
+		<!-- singin & loging part ending here -->
+
+
+		<!-- header section start here -->
+		@if (Session::has('success'))
+
+			<div class="alert alert-success">
+		        <p>{{ Session::get('success') }}</p>
+		    </div>
+
+		@elseif(Session::has('danger'))
+
+		    <div class="alert alert-danger">
+		        <p>{{ Session::get('danger') }}</p>
+		    </div>
+
+		@endif
+
+		
+		<header class="header-section">
+			<div class="header-top" id="stiky">
+				<div class="header_container">
+					<div class="d-flex justify-content-between flex-wrap align-items-center">
+						<div class="ht_left">
+							<div class="logo_area">
+
+							<div class="logo">
+								<div class="menu_bar" style="position: absolute;">
+									<i class="fas fa-bars"
+									style="
+									    font-size: 22px;
+									"
+									></i>
+								</div>
+								{{-- <a href="{{route('index')}}" style="padding-left: 40px; margin-right: 20px;"><img src="{{asset('images/'.$general->logo)}}" alt="logo" style="max-width: 50px;"></a> --}}
+								<div style="
+								    padding-left: 5em;
+								    padding-top: 6px;
+								">
+								<i class="fas fa-phone" style="
+								    transform: rotate(109deg);
+								"></i><span style="padding-left: 5px;">{{__('home.phone_section')}}</span>
+								</div>
+							</div>
+						</div>
+							
+						</div>
+						<div class="ht_right">
+							<div class="d-flex justify-content-end justify-content-lg-between flex-wrap align-items-center">
+								<div class="ht_r_left">
+									<div class="ht_serch_all">
+										<form action="{{route('product.search')}}" method="get" style="margin-bottom: 0;">
+										<div class="d-flex justify-content-between align-items-center">
+											<input type="text" placeholder="{{__('home.search')}}" name="search">
+											<select name="categories">
+												<option value="">{{__('home.all')}}</option>
+												@foreach($categories as $category)
+												<option value="{{ $category->id }}">
+													@if(Config::get('app.locale') == 'bd')
+
+                                                    @if(!is_null($category->name_bd))
+                                                        {{$category->name_bd}}
+                                                    @else
+                                                        {{$category->name}}
+                                                    @endif
+
+                                                    @elseif(Config::get('app.locale') == 'en')
+                                                        {{$category->name}}
+                                                    @endif
+													
+
+												</option>
+												@endforeach
+											</select>
+											<button type="submit" class="">
+												<i class="flaticon-magnifying-glass"></i>
+											</button>
+										</div>
+										</form>
+									</div>
+								</div>
+								<div class="ht_r_right row">
+									<div class="col">
+									<ul>
+										@if($general->facebook != Null & $general->facebook != "#")
+										<li>
+											<a href="{{$general->facebook}}"><i class="fab fa-facebook-f"></i></a>
+										</li>
+										@endif
+										@if($general->twitter != Null & $general->twitter != "#")
+										<li><a href="{{$general->twitter}}"><i class="fab fa-twitter"></i></a></li>
+										@endif
+										@if($general->linkedin != Null & $general->linkedin != "#")
+										<li><a href="{{$general->linkedin}}"><i class="fab fa-linkedin-in"></i></a></li>
+										@endif
+										@if($general->google != Null & $general->google != "#")
+										<li><a href="{{$general->google}}"><i class="fab fa-google"></i></a></li>
+										@endif
+									</ul>
+									</div>
+									
+									@yield('language_switch')
+									<div class="col">
+										<div class="dropdown show">
+											  <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+											    {{__('home.language')}}
+											  </a>
+
+											  <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+											    <a class="dropdown-item" href="{{route('language','en')}}">English</a>
+											    <a class="dropdown-item" href="{{route('language','bd')}}">বাংলা</a>
+											  </div>
+											</div>
+									</div>
+
+									
+
+									
+
+
+								</div>
+							</div>
+						</div>
+						<div class="ht_r_right d-md-none" style="margin-top: 12px;">
+							<div class="ht_icon_all_option">
+								<a href="{{route('login')}}"><div class="ht_option">@lang('home.log_in')</div></a>
+							</div>
+
+							<div class="ht_icon_all_option">
+								<a href="{{route('register')}}"><div class="ht_option">@lang('home.register')</div></a>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			
+
+			<div class="header-bottom">
+				<div class="container">
+					<div class="d-flex justify-content-between flex-wrap align-items-center" style="padding-left: 13px;">
+						<div class="logo_area">
+							<div class="menu_bar d-block d-sm-block d-md-none">
+								<i class="fas fa-bars d-md-none d-sm-block"></i>
+							</div>
+							<div class="logo ">
+								<a href="{{route('index')}}"><img src="{{asset('images/'.$general->logo)}}" alt="logo"></a>
+							</div>
+						</div>
+						<div class="menu_area">
+							<div class="main-menu d-none d-xl-block">
+
+
+								{{-- <ul>
+									<li><a href="{{ route('index') }}" class="active">Home</a></li>
+									<li><a href="{{ route('products') }}">Shop</a></li>
+									<li><a href="#">New Arrivals<span class="new_offer">new</span></a></li>
+									<li><a href="#">Popular Item</a></li>
+									<li><a href="#">Blog</a></li>
+									<li><a href="#">Contact Us</a></li>
+								</ul> --}}
+
+								<ul>
+									@if($primary_menu)
+									@foreach($primary_menu as $menu)	
+									@if( $menu['child'] )
+									<li>
+										<div class="dropdown dropdown_hover_menu">
+										  <a class="dropdown-toggle
+
+										   @if(Request::url() === $menu['link'])
+											    active
+											@endif
+
+										  " href="{{ $menu['link'] }}"> 
+										    @if(Config::get('app.locale') == 'bd')
+
+		                                        @if(!is_null($menu['label_bd']))
+		                                            {{ $menu['label_bd'] }}
+		                                        @else
+		                                            {{ $menu['label'] }}
+		                                        @endif
+
+		                                    @elseif(Config::get('app.locale') == 'en')
+		                                        {{ $menu['label'] }}
+		                                    @endif
+										  </a>
+
+										  <div class="dropdown-menu dropdown_hover_item">
+										  	@foreach( $menu['child'] as $child )
+
+						                        <a class="dropdown-item" href="{{ $child['link'] }}">
+						                        	@if(Config::get('app.locale') == 'bd')
+
+			                                        @if(!is_null($child['label_bd']))
+			                                            {{ $child['label_bd'] }}
+			                                        @else
+			                                            {{ $child['label'] }}
+			                                        @endif
+
+			                                    @elseif(Config::get('app.locale') == 'en')
+			                                        {{ $child['label'] }}
+			                                    @endif
+						                        </a>
+
+						                    @endforeach
+										   
+										  </div>
+										</div>
+									</li>
+
+									@else
+
+									<li>
+									<a href="{{ $menu['link'] }}" class="
+									@if(Request::url() == $menu['link'])
+									    active
+									@endif
+									
+									">
+										@if(Config::get('app.locale') == 'bd')
+
+	                                        @if(!is_null($menu['label_bd']))
+	                                            {{ $menu['label_bd'] }}
+	                                        @else
+	                                            {{ $menu['label'] }}
+	                                        @endif
+
+	                                    @elseif(Config::get('app.locale') == 'en')
+	                                        {{ $menu['label'] }}
+	                                    @endif
+										</a>
+									</li>
+					                @endif
+									@endforeach
+									@endif
+									
+								</ul>
+							</div>
+
+    
+    
+  
+							<div class="author_cart_area">
+								<div class="ht_icon_all">
+									<div class="wish_list">
+										<i class="far fa-heart"></i>
+										<span>0</span>
+									</div>
+									<div class="ht_icon_all_cart">
+
+										<div class="wish_list">
+											<a href="{{ route('carts') }}" style="color: {{$color->secondary}}">
+											<i class="fas fa-shopping-cart"></i>
+											</a>
+										<span>
+
+											@if(isset($carts['id']))
+												@php
+												echo count($carts['id']);
+												@endphp
+											
+											@else
+												0
+											@endif
+										</span>
+
+										
+											
+										
+										</div>
+
+										
+									</div>
+									<div class="ht_icon_all_option d-none d-md-block">
+										@if(Auth::check())
+										<div class="ht_option"> <a href="{{route('user.profile.home')}}"><i class="fas fa-user"></i> {{Auth::user()->name}} </a></div>
+										@else
+										<div class="ht_option"> <a href="{{route('login')}}"> {{__('home.log_in')}} </a></div>
+										
+										
+									</div>
+
+									<div class="ht_icon_all_option d-none d-md-block">
+										
+										<div class="ht_option"> <a href="{{route('register')}}"> {{__('home.register')}} </a></div>
+										
+									</div>
+									@endif
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</header>
+		<!-- header section ending here -->
+
+
+
+		@yield('content')
+		
+@if(SectionSwitch::find(10)->action == 1)
+@if(Counter::find(1)->automatic == 1)
+		<!-- customer vesit section start here -->
+		<div class="cus_vis_section">
+			<div class="container">
+				<div class="section-wrapper">
+					<div class="cus_vis_items">
+						<div class="cus_vis_item">
+							<div class="cus_vis_inner">
+								<div class="cus_vis_content">
+									<div class="cus_icon"><img src="{{asset('assets/images/counter/tags.png')}}" alt="coubter"></div>
+									<div class="cus_count">
+										<h3 class="counter">{{ $categories->count() }}
+
+										</h3><span>+</span>
+									</div>
+									<div class="cus_desc">
+										<p>{{__('home.exclusive_categories')}}</p>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="cus_vis_item">
+							<div class="cus_vis_inner">
+								<div class="cus_vis_content">
+									<div class="cus_icon"><img src="{{asset('assets/images/counter/bag.png')}}" alt="coubter"></div>
+									<div class="cus_count">
+										<h3 class="counter">{{$products->count()}}</h3><span>+</span>
+									</div>
+									<div class="cus_desc">
+										<p>{{__('home.products_accessories')}}</p>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="cus_vis_item">
+							<div class="cus_vis_inner">
+								<div class="cus_vis_content">
+									<div class="cus_icon"><img src="{{asset('assets/images/counter/cus.png')}}" alt="coubter"></div>
+									<div class="cus_count">
+										<h3 class="counter">{{count(User::orderBy('id', 'asc')->get())}}</h3><span>+</span>
+									</div>
+									<div class="cus_desc">
+										<p>{{__('home.happy_customers')}}</p>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<!-- customer vesit section ending here -->
+@elseif(Counter::find(1)->automatic == 0)
+<!-- customer vesit section start here -->
+		<div class="cus_vis_section">
+			<div class="container">
+				<div class="section-wrapper">
+					<div class="cus_vis_items">
+						<div class="cus_vis_item">
+							<div class="cus_vis_inner">
+								<div class="cus_vis_content">
+									<div class="cus_icon"><img src="{{asset('assets/images/counter/tags.png')}}" alt="coubter"></div>
+									<div class="cus_count">
+										<h3 class="counter">{{ Counter::find(1)->exclusive_categories }}
+
+										</h3><span>+</span>
+									</div>
+									<div class="cus_desc">
+										<p>{{__('home.exclusive_categories')}}</p>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="cus_vis_item">
+							<div class="cus_vis_inner">
+								<div class="cus_vis_content">
+									<div class="cus_icon"><img src="{{asset('assets/images/counter/bag.png')}}" alt="coubter"></div>
+									<div class="cus_count">
+										<h3 class="counter">{{ Counter::find(1)->products_accessories }}</h3><span>+</span>
+									</div>
+									<div class="cus_desc">
+										<p>{{__('home.products_accessories')}}</p>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="cus_vis_item">
+							<div class="cus_vis_inner">
+								<div class="cus_vis_content">
+									<div class="cus_icon"><img src="{{asset('assets/images/counter/cus.png')}}" alt="coubter"></div>
+									<div class="cus_count">
+										<h3 class="counter">{{ Counter::find(1)->happy_customer }}</h3><span>+</span>
+									</div>
+									<div class="cus_desc">
+										<p>{{__('home.happy_customers')}}</p>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<!-- customer vesit section ending here -->
+@endif
+@endif
+
+
+		<!-- footer section start here -->
+		<footer>
+			<div class="footer-top padding-tb">
+				<div class="container">
+					<div class="row">
+						<div class="col-lg-5 col-sm-6">
+							<div class="fr_left_side">
+								<div class="ft_item">
+									<div class="ft_logo_area">
+										<a href="index.html">
+											<img src="{{asset('images/'.$general->logo)}}" alt="ft_logo">
+										</a>
+										<p>{{__('home.about_section')}}</p>
+										<div class="ft_s_media">
+											<ul>
+												<li><a class="facebook" href="{{$general->facebook}}"><i class="fab fa-facebook-f"></i></a></li>
+												<li class="twitter"><a href="{{$general->twitter}}"><i class="fab fa-twitter"></i></a></li>
+												<li class="linkedin"><a href="{{$general->linkedin}}"><i class="fab fa-linkedin-in"></i></a></li>
+												<li class="google"><a href="{{$general->google}}"><i class="fab fa-google"></i></a></li>
+											</ul>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="col-lg-3 col-sm-6">
+							<div class="ft_item ft_bg_item">
+								<div class="ft_flow">
+									<div class="ft_title">
+										<h6>{{__('home.footer_follow')}}</h6>
+									</div>
+									<div class="ft_body">
+										<ul>
+											<li>
+												<div class="ft_icon"><i class="fas fa-map-marker-alt"></i></div>
+												<div class="ft_content">
+													<p>{{__('home.address_section')}}</p>
+												</div>
+											</li>
+											<li>
+												<div class="ft_icon"><i class="fas fa-phone-volume"></i></div>
+												<div class="ft_content">
+													<p>{{__('home.phone_section')}}</p>
+												</div>
+											</li>
+											<li>
+												<div class="ft_icon"><i class="fas fa-envelope"></i></div>
+												<div class="ft_content">
+													<a href="mailto:{{$general->email}}">{{$general->email}}</a>
+												</div>
+											</li>
+											<li>
+												<div class="ft_icon"><i class="fas fa-globe-asia"></i></div>
+												<div class="ft_content">
+													<a href="{{$general->website}}">{{$general->website}}</a>
+												</div>
+											</li>
+										</ul>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="col-lg-2 col-sm-6">
+							<div class="ft_item">
+								<div class="ft_flow">
+									<div class="ft_title">
+										<h6>{{__('home.get_to_know_us')}}</h6>
+									</div>
+									<div class="ft_body">
+										<ul>
+										@if($footer_left_menu)
+											@foreach($footer_left_menu as $menu)
+
+												<li><a href="{{$menu['link']}}">
+													@if(Config::get('app.locale') == 'bd')
+
+										            @if(!is_null($menu['label_bd']))
+										                {{ $menu['label_bd'] }}
+										            @else
+										                {{ $menu['label'] }}
+										            @endif
+
+											        @elseif(Config::get('app.locale') == 'en')
+											            {{ $menu['label'] }}
+											        @endif
+												</a></li>
+
+												@if($menu['child'])
+													@foreach($menu['child'] as $child)
+													<li><a href="{{$child['link']}}">
+														@if(Config::get('app.locale') == 'bd')
+
+											            @if(!is_null($child['label_bd']))
+											                {{ $child['label_bd'] }}
+											            @else
+											                {{ $child['label'] }}
+											            @endif
+
+												        @elseif(Config::get('app.locale') == 'en')
+												            {{ $child['label'] }}
+												        @endif
+													</a></li>
+													@endforeach
+												@endif
+											@endforeach
+												
+											@endif
+											
+											
+										</ul>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="col-lg-2 col-sm-6">
+							<div class="ft_item">
+								<div class="ft_flow">
+									@if($footer_right_menu)
+									<div class="ft_title">
+										@foreach($footer_right_menu as $menu_item)
+										@php $footer_right_main_menu = Menus::find($menu_item['menu']); @endphp
+										<h6>
+
+											@if(Config::get('app.locale') == 'bd')
+
+								            @if(!is_null($footer_right_main_menu->name_bd))
+								                {{ $footer_right_main_menu->name_bd }}
+								            @else
+								                {{ $footer_right_main_menu->name }}
+								            @endif
+
+									        @elseif(Config::get('app.locale') == 'en')
+									            {{ $footer_right_main_menu->name }}
+									        @endif
+										</h6>
+										@php break; @endphp
+										@endforeach
+									</div>
+									<div class="ft_body">
+										<ul>
+											
+											@foreach($footer_right_menu as $menu)
+
+												<li><a href="{{$menu['link']}}">
+													@if(Config::get('app.locale') == 'bd')
+
+										            @if(!is_null($menu['label_bd']))
+										                {{ $menu['label_bd'] }}
+										            @else
+										                {{ $menu['label'] }}
+										            @endif
+
+											        @elseif(Config::get('app.locale') == 'en')
+											            {{ $menu['label'] }}
+											        @endif
+												</a></li>
+
+												@if($menu['child'])
+													@foreach($menu['child'] as $child)
+													<li><a href="{{$child['link']}}">
+														@if(Config::get('app.locale') == 'bd')
+
+											            @if(!is_null($child['label_bd']))
+											                {{ $child['label_bd'] }}
+											            @else
+											                {{ $child['label'] }}
+											            @endif
+
+												        @elseif(Config::get('app.locale') == 'en')
+												            {{ $child['label'] }}
+												        @endif
+													</a></li>
+													@endforeach
+												@endif
+											@endforeach
+												
+									@endif
+											
+										</ul>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="footer-bottom">
+				<div class="container">
+					<div class="section-wrapper">
+						<p>{{__('home.copyright_section')}}</p>
+					</div>
+				</div>
+			</div>
+		</footer>
+		<!-- footer section start here -->
+
+		<!-- scrollToTop start here -->
+		<a href="#" class="scrollToTop"><i class="flaticon-chevron-up"></i></a>
+		<!-- scrollToTop ending here -->
+
+		
+		<script src="{{ asset('assets/js/jquery.js') }}"></script>
+		<script src="{{ asset('assets/js/news-ticker.min.js') }}"></script>
+		<script src="{{ asset('assets/js/fontawesome.min.js') }}"></script>
+		<script src="{{ asset('assets/js/jquery.counterup.min.js') }}"></script>
+		<script src="{{ asset('assets/js/waypoints.min.js') }}"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+		<script src="{{ asset('assets/js/bootstrap.min.js') }}"></script>
+		<script src="{{ asset('assets/js/swiper.min.js') }}"></script>
+		<script src="{{ asset('assets/js/slick.min.js') }}"></script>
+		<script src="{{ asset('assets/js/printThis.js') }}"></script>
+		<script src="{{ asset('assets/js/functions.js') }}"></script>
+		<script src="{{ asset('js/notifIt.js') }}"></script>
+
+
+	</body>
+</html>
+
+<script type="text/javascript">
+	
+    
+    $(window).scroll(function() {
+        if ($(document).scrollTop() > 10) {
+            $('#stiky').css("position","fixed").fadeIn( "slow" );
+        }
+        else {
+            $('#stiky').css("position","inherit");
+        }
+    });
+
+    if ($(window).width() >= 992) {
+    	$('.hb_left_bottom').addClass( "open" );
+	  	$('.container').css("padding-left","155px");
+	  	//$('.header-bottom').css("padding-left","300px");
+	  	$('.banner').css("padding-left","240px");
+	  	
+
+	  	$( ".menu_bar" ).click(function() {
+		  if ($(".hb_left_bottom").hasClass("open")) {
+		   $('.container').css("padding-left","0px");
+		   $('.banner').css("padding-left","0px");
+			}else {
+				$('.container').css("padding-left","150px");
+				$('.banner').css("padding-left","240px");
+			}
+		});
+
+
+
+		/*if ($("#parent_category").hasClass("open")) {
+	   		$('.category_child').css( "display",'block' );
+		}else {
+			$('.category_child').removeClass( "open" );
+		}*/
+
+		
+
+		/*$('.container').css("padding-left","0px");
+		
+		$( ".menu_bar" ).click(function() {
+		  alert( "Handler for .click() called." );
+		}*/
+	}
+
+	
+	
+	@if(Session::has('success'))
+        
+        var message = '{{ Session::get('success') }}';
+        notif({
+        msg: message,
+        type: "success"
+        });
+
+    @elseif(Session::has('danger'))
+
+        var message = '{{ Session::get('danger') }}';
+        notif({
+        msg: message,
+        type: "error"
+
+        });
+
+    @elseif($errors->any())
+
+    var message = "@foreach($errors->all() as $error) <li>{{ $error }}</li>  @endforeach";
+    notif({
+    msg: message,
+    type: "error"
+
+    });
+
+    @endif
+</script>
+@yield('script')

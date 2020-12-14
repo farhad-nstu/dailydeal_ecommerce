@@ -1,0 +1,367 @@
+@php
+use App\AttributeSet;
+use App\Attribute;
+use App\Brand;
+use App\Review;
+use App\Cart;
+use App\Shipping;
+use App\City;
+use App\Product;
+use App\ProductImage;
+
+$cities = City::orderBy('priority', 'asc')->get();
+$shippingcharge = Shipping::find(1);
+
+$carts = new Cart;
+$carts = $carts->carts();
+$carts = Session::get('product');
+
+@endphp
+@extends('frontend.layouts.home')
+
+@extends('frontend.layouts.reviewstyle')
+
+@section('content')
+
+ <section class="cart-page">
+    @if(Session::has('product'))
+    <form action="{{ route('orders.store') }}" method="post" style="width: 100%;">
+                        @csrf
+    @endif
+            <div class="container pt-5">
+                <div class="section-wrapper row">
+                    <div class="left_side col-12">
+                        <div class="left_side_area">
+                            <div class="side_bottom">
+                                <div class="side_bottom_area">
+                                    <div class="side_title row">
+                                        <div class="pro_title col-12 col-sm-12 col-md-4">
+                                            <h6>Shipping Cart</h6>
+                                        </div>
+                                        <div class="pro_qua d-none d-md-block d-sm-none col-md-4">
+                                            <h6>Quantity</h6> 
+                                        </div>
+                                        
+                                        <div class="pro_pri d-none d-md-block d-sm-none col-md-4">
+                                            <h6>Price</h6>
+                                        </div>
+                                    </div>
+                                    <div class="cart_pro_list ">
+                                        <ul>
+                                        @if(Session::has('product'))
+                                                @php
+                                                 
+                                                 if (Session::has('product')) {
+                                                     $cart_counts = count($carts['id']); $total_products =0; 
+                                                 }else {
+                                                    $cart_counts = 0;
+                                                 }
+                                                 @endphp
+
+
+                                                @for($i = 0; $i < $cart_counts; $i++)
+                                                    @php
+                                                    $total_products += $carts['quantity'][$i];
+                                                    @endphp
+                                                @endfor
+                                                
+
+                                            @php
+                                                $total_pcire = 0;
+                                            @endphp
+
+                                            @for($i = 0; $i < $cart_counts; $i++)
+
+                                            @php
+                                                $total_pcire += $carts['price'][$i]+Session::get('shipping');
+                                                $product = Product::find($carts['id'][$i]);
+                                                $product_image = ProductImage::where('product_id',$carts['id'][$i])->first();
+                                            @endphp
+
+                                            <li class="side_body">
+                                                <div class="pro_title col-12 col-sm-12 col-md-4">
+                                                    <div class="thumb">
+                                                        <a href="#">
+                                                            @if(!is_null($product))
+                                                                @if(!is_null($product_image))
+                                                                <img src="images/{{ $product_image->image }}" alt="cart" style="width: 100px;">
+                                                                @else
+                                                                <img src="{{asset('images/no-img.jpg') }}" alt="cart" style="width: 100px;">
+                                                                @endif
+                                                            @else
+                                                                This Product not available
+                                                            @endif
+                                                        </a>
+
+
+
+                                                    </div>
+                                                    <div class="content" style="margin-top: 15px;">
+                                                        <a href="#">{{ $product->title }}</a>
+                                                        <p style="
+                                                            font-size: 12px;
+                                                            font-weight: 100;
+                                                        ">
+                                                            @if(isset($carts['attribute_options'][$i]))
+                                                            @php
+                                                                $attribute_options = $carts['attribute_options'][$i];
+                                                                $attribute_options = unserialize($attribute_options);
+                                                            @endphp
+                                                            @foreach($attribute_options as $option)
+                                                                {{$option }}
+                                                            @endforeach
+                                                            @endif
+                                                        </p>
+                                                        <p style="
+                                                            font-size: 12px;
+                                                            font-weight: 100;
+                                                        ">
+                                                           @if(Session::has('shipping'))
+                                                            Shipping Cost: {{Session::get('shipping')}}
+                                                           @endif 
+                                                        </p>
+                                                        <p>
+                                                        <textarea rows="2" placeholder="Your message for this product." name="message[]"></textarea>
+                                
+                                                        </p>
+
+
+                                                    </div>
+                                                    <a href="{{-- {{route('carts.delete', $cart->id)}} --}}" onclick="return confirm('Are you sure you want to delete this item?');" style="float: right;position: absolute;right: 6px;top: 3px;" class="d-md-none d-sm-block"><i class="fa fa-trash" aria-hidden="true"></i></a>
+                                                </div>
+                                                <div class="pro_qua col-12 col-sm-12 col-md-4">
+                                                    <div class="cart-plus-minus2">
+                                                        <a href="{{route('carts.updatequantity', ['id'=>$i,'action'=>'minus'])}}">
+                                                        <div class="dec qtybutton2">-</div>
+                                                        </a>
+
+                                                        <input class="cart-plus-minus-box" type="text" name="qtybutton" value="{{$carts['quantity'][$i]}}">
+
+                                                        <a href="{{route('carts.updatequantity', ['id'=>$i,'action'=>'plus'])}}">
+                                                        <div class="inc qtybutton2" style="right: 0;">+</div>
+                                                        </a>
+                                                        
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="pro_pri col-12 col-sm-12 col-md-3">
+                                                    <span>Tk. {{ $carts['price'][$i] }}</span>
+
+                                                </div>
+                                                <div class="pro_poi d-md-block d-sm-none d-none  col-12 col-sm-12 col-md-1">
+                                                     <a href="{{route('carts.delete', $i)}}" onclick="return confirm('Are you sure you want to delete this item?');"><i class="fa fa-trash" aria-hidden="true"></i></a>
+                                                </div>
+
+                                            </li>
+
+                                            @endfor
+                                        @endif
+                                        </ul>
+                                        <div class="total_price_palan">
+                                            <ul>
+                                            @if(Session::has('product'))
+                                                
+                                                <li class="side_footer">
+                                                    <div class="pro_title"></div>
+                                                    <div class="pro_shop">
+                                                        @if(Session::has('city'))
+                                                            <p class="text-success">Selected City is {{Session::get('city')}} you can change it from below.</p>
+
+                                                            <div class="dropdown">
+                                                              <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="
+                                                                    border-radius: 0;
+                                                                    padding: 5px;
+                                                                ">
+                                                                Change Delivery Area
+                                                              </button>
+                                                              <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                                                @foreach($cities as $city)
+                                                                <a class="dropdown-item" href="{{route('shipping.add',$city->name)}}">{{ $city->name }}</a>
+                                                                @endforeach
+
+                                                        @else
+                                                        <p class="text-danger">Cart not complete Select Delivery Area For Complete Cart</p>
+
+                                                        <div class="dropdown">
+                                                          <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="
+                                                                border-radius: 0;
+                                                                padding: 5px;
+                                                            ">
+                                                            Select Delivery Area
+                                                          </button>
+                                                          <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                                            @foreach($cities as $city)
+                                                            <a class="dropdown-item" href="{{route('shipping.add',$city->name)}}">{{ $city->name }}</a>
+                                                            @endforeach
+
+                                                            @endif
+                                                            
+                                                          </div>
+                                                        </div>
+
+                                                        <span>Inside Dhaka {{$shippingcharge->inside_dhaka}}<br>All Bangladesh {{$shippingcharge->outside_dhaka}} </span>
+                                                        
+                                                    </div>
+                                                </li>
+                                                <li class="side_footer">
+                                                    <div class="pro_title"></div>
+                                                    <div class="pro_qua">
+                                                        <h6> &nbsp;</h6>
+                                                    </div>
+                                                    <div class="pro_poi">
+                                                        <h6>Total</h6>
+                                                    </div>
+                                                    <div class="pro_pri">
+                                                        <h6>{{ $total_pcire }}</h6>
+                                                        @php
+                                                            Session::put('sub_total', $total_pcire);
+                                                        @endphp
+
+                                                        
+                                                    </div>
+                                                </li>
+
+                                                @else
+                                                There is no product in cart.
+                                                @endif
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    @if(Session::has('product') && Session::has('city'))
+                    
+                        <div class="right_side" style="max-width: 100%; width: 100%;">
+                        <div class="payment_mathod">
+                            <div class="payment_thumb">
+                                <img src="assets/images/payment/icon.png" alt="payment-thumb">
+                            </div>
+                            <div class="payment_content">
+                                <h6>Payment Methoads</h6>
+                                <p>Please select the preferred payment method to use on this order.</p>
+                                <div class="payment_mathod_items">
+                                    <p class="payment_mathod_item">
+                                        <input type="radio" value="0" name="payment_mentod" id="cashondelivery" required="">
+                                        <label for="cashondelivery">Cash On Delivery</label>
+                                    </p>
+                                    <p class="payment_mathod_item">
+                                        <input type="radio" value="1" name="payment_mentod" id="bkash">
+                                        <label for="bkash">Online Payment</label>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        @if(Auth::guard('web')->check())
+                        <div class="customer_information">
+                            <div class="title">
+                                <h6>Shipping Informations</h6>
+                            </div>
+                            <ul class="customer_details">
+                                <li>
+                                    <label>Your Name*</label>
+                                    <input type="text" name="name" required="" value="{{Auth::guard('web')->user()->name }}">
+                                </li>
+                                
+                                <li>
+                                    <label>Phone*</label>
+                                    <input type="text" placeholder="+880" name="phone_number" required="" value="{{Auth::guard('web')->user()->phone_number }}">
+                                </li>
+                                <li>
+                                    <label>Email</label>
+                                    <input type="email" name="email" required="" value="{{Auth::guard('web')->user()->email }}">
+                                </li>
+
+                                <li>
+                                    <label>Address*</label>
+                                    <textarea rows="2" placeholder="Enter delivery address here" name="shipping_address" required="">{{Auth::guard('web')->user()->delivery_address }}</textarea>
+                                </li>
+
+                                
+                                <li>
+                                    <button type="submit" class="btn">Conferm Order</button>
+                                </li>
+                            </ul>
+                        </div>
+
+                        @elseif(Auth::guard('vendor')->check())
+                        <div class="customer_information">
+                            <div class="title">
+                                <h6>Shipping Informations</h6>
+                            </div>
+                            <ul class="customer_details">
+                                <li>
+                                    <label>Your Name*</label>
+                                    <input type="text" name="name" required="" value="{{ Auth::guard('vendor')->user()->name }}">
+                                </li>
+                                <li>
+                                    <label>Phone*</label>
+                                    <input type="text" placeholder="+880" name="phone_number" required="" value="{{ Auth::guard('vendor')->user()->phone }}">
+                                </li>
+                                <li>
+                                    <label>Email</label>
+                                    <input type="email" name="email" value="{{ Auth::guard('vendor')->user()->email }}">
+                                </li>
+                                <li>
+                                    <label>Address*</label>
+                                    <textarea rows="2" placeholder="Enter delivery address here" name="shipping_address" required="">{{ Auth::guard('vendor')->user()->address }}</textarea>
+                                </li>
+
+                                
+                                <li>
+                                    <button type="submit" class="btn">Conferm Order</button>
+                                </li>
+                            </ul>
+                        </div>
+
+                        @else
+
+                        <div class="customer_information">
+                            <div class="title">
+                                <h6>Shipping Informations</h6>
+                            </div>
+                            <ul class="customer_details">
+                                <li>
+                                    <label>Your Name*</label>
+                                    <input type="text" placeholder="Full Name" name="name" required="">
+                                </li>
+                                <li>
+                                    <label>Phone*</label>
+                                    <input type="text" placeholder="+880" name="phone_number" required="">
+                                </li>
+
+                                <li>
+                                    <label>Email</label>
+                                    <input type="email" placeholder="yourname@email.com" name="email">
+                                </li>
+                                <li>
+                                    <label>Address*</label>
+                                    <textarea rows="2" placeholder="Enter delivery address here" name="shipping_address" required=""></textarea>
+                                </li>
+
+                                
+                                
+                                <li>
+                                    <button type="submit" class="btn">Conferm Order</button>
+                                </li>
+                            </ul>
+                        </div>
+
+                        @endif
+
+                    
+                    
+                    </div>
+                </div>
+            </div>
+            @endif
+
+            </form>
+        </section>
+
+        
+
+@endsection

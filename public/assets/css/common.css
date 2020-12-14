@@ -1,0 +1,22 @@
+.shop-single .section-wrapper .main_side .shop_single_slider .review .review-content .review-showing .content li .post-content {
+    width: 100%;
+}
+
+.product-reviews-content .post-thumb {
+    width: 100%;
+    padding-bottom: 15px;
+}
+
+@media (min-width: 768px){
+.product-reviews-content .post-thumb {
+    padding-bottom: 0;
+    width: 70px;
+}
+.product-reviews-content .post-content {
+    width: calc(100% - 70px);
+    padding-left: 20px;
+}
+}
+
+
+

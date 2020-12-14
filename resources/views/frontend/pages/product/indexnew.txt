@@ -1,0 +1,628 @@
+@extends('frontend.layouts.home')
+
+@section('content')
+
+
+<main class="main" style="padding-top: 120px;">
+            
+
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-lg-9 padding-left-lg col-xl-10">
+                        
+                        <nav class="toolbox">
+                            <div class="toolbox-left">
+                                <div class="toolbox-item toolbox-sort">
+                                    <label>Sort By:</label>
+
+                                    <div class="select-custom">
+                                        <select name="orderby" class="form-control" onchange="location = this.value;">
+                                            <option>Select</option>
+                                            <option value="{{route('products')}}">Default sorting</option>
+                                            <option value="{{route('product.short.newest')}}">Sort by newness</option>
+                                            <option value="{{route('product.short.priceasc')}}">Sort by price: low to high</option>
+                                            <option value="{{route('product.short.pricedesc')}}">Sort by price: high to low</option>
+                                        </select>
+                                    </div><!-- End .select-custom -->
+
+                                    <a href="#" class="sorter-btn" title="Set Ascending Direction"><span class="sr-only">Set Ascending Direction</span></a>
+                                </div><!-- End .toolbox-item -->
+
+                                
+                            </div><!-- End .toolbox-left -->
+
+                            <div class="toolbox-item toolbox-show">
+                                <label>Show:</label>
+
+                                <div class="select-custom">
+                                    <select name="count" class="form-control" onchange="location = this.value;">
+                                        <option>Select</option>
+                                        <option value="{{route('product.short.showamount','20')}}">20</option>
+                                        <option value="{{route('product.short.showamount','30')}}">30</option>
+                                        <option value="{{route('product.short.showamount','40')}}">40</option>
+                                        <option value="{{route('product.short.showamount','50')}}">50</option>
+                                    </select>
+                                </div><!-- End .select-custom -->
+                            </div><!-- End .toolbox-item -->
+                        </nav>
+
+                        <div class="row row-sm">
+                            @foreach($products as $product)
+                            <div class="col-6 col-md-4 col-lg-3">
+                                <div class="product-default inner-quickview inner-icon">
+                                    <figure>
+                                        <a href="{{route('product.show', $product->slug)}}">
+
+                                            @php
+                                                $i = 1;
+                                            @endphp
+                                            @if(count($product->images) > 0)
+                                            @foreach($product->images as $image)
+                                                @if($i>0)
+                                                    <img src="{{ asset('images/'.$image->image) }}">
+                                                @endif
+                                            @php
+                                                $i--;
+                                            @endphp
+                                            @endforeach
+                                            @else
+                                            <img src="{{asset('images/no-img.jpg')}}">
+                                            
+                                            @endif
+                                            
+                                        </a>
+                                        <div class="label-group">
+                                            @if($product->offer_price > 0)
+                                            <span class="product-label label-cut">
+
+                                            
+                                                
+
+                                            @php
+                                                $off_amount = $product->price-$product->offer_price;
+                                                $off_parcent = intval(($off_amount/$product->price)*100);
+                                            @endphp
+
+                                            
+                                            @if(Config::get('app.locale') == 'bd')
+
+                                                @php
+                                                  echo BanglaConverter::en2bn($off_parcent);
+                                                @endphp
+
+                                            @elseif(Config::get('app.locale') == 'en')
+                                                {{$off_parcent}}
+                                            @endif
+                                                
+                                                
+                                                
+                                             %   
+
+                                             OFF</span>@endif
+                                        </div>
+                                        
+                                    </figure>
+                                    <div class="product-details">
+                                        
+                                        <h2 class="product-title">
+                                            <a href="{{route('product.show', $product->slug)}}">
+                                                @if(Config::get('app.locale') == 'bd')
+
+                                        @if(!is_null($product->title_bd))
+                                            {{ $product->title_bd }}
+                                        @else
+                                            {{ $product->title }}
+                                        @endif
+
+                                    @elseif(Config::get('app.locale') == 'en')
+                                        {{ $product->title }}
+                                    @endif
+                                            </a>
+                                        </h2>
+                                        <div class="ratings-container">
+                                            @include('frontend.layouts.partials.starreview')
+                                        </div><!-- End .product-container -->
+                                        <div class="price-box">
+                                            @include('frontend.layouts.partials.offer-parcent')
+                                        </div><!-- End .price-box -->
+                                    </div><!-- End .product-details -->
+                                </div>
+                            </div>
+                            @endforeach
+                            
+                        </div>
+
+                        <nav class="toolbox toolbox-pagination">
+                            {{ $products->links() }}
+                        </nav>
+                    </div><!-- End .col-lg-8 -->
+
+                    <aside class="sidebar-shop col-lg-3 col-xl-2 order-lg-first">
+                        <div class="sidebar-wrapper">
+                            @foreach(App\Category::orderBy('name','asc')->get() as $category)
+                            <div class="widget">
+                                <h3 class="widget-title">
+                                    <a data-toggle="collapse" href="#widget-body-category{{$category->id}}" role="button" aria-expanded="false" aria-controls="widget-body-category{{$category->id}}" class="collapsed">
+                                        @if(Config::get('app.locale') == 'bd')
+
+                                            @if(!is_null($category->name_bd))
+                                                {{ $category->name_bd }}
+                                            @else
+                                                {{ $category->name }}
+                                            @endif
+
+                                        @elseif(Config::get('app.locale') == 'en')
+                                            {{ $category->name }}
+                                        @endif
+                                    </a>
+                                </h3>
+                                
+                                <div class="collapse" id="widget-body-category{{$category->id}}">
+                                    <div class="widget-body">
+                                        <ul class="cat-list">
+                                            <li><a href="{{route('category.show',$category->slug)}}">
+                                                @if(Config::get('app.locale') == 'bd')
+
+                                                    @if(!is_null($category->name_bd))
+                                                        {{ $category->name_bd }}
+                                                    @else
+                                                        {{ $category->name }}
+                                                    @endif
+
+                                                @elseif(Config::get('app.locale') == 'en')
+                                                    {{ $category->name }}
+                                                @endif
+                                            </a></li>
+                                            @foreach(App\Category::orderBy('name','asc')->where('parent_id', $category->id)->get() as $child)
+                                            <li><a href="{{route('category.show',$child->slug)}}">
+                                                @if(Config::get('app.locale') == 'bd')
+
+                                                    @if(!is_null($child->name_bd))
+                                                        {{ $child->name_bd }}
+                                                    @else
+                                                        {{ $child->name }}
+                                                    @endif
+
+                                                    @elseif(Config::get('app.locale') == 'en')
+                                                        {{ $child->name }}
+                                                    @endif
+                                            </a></li>
+                                            @endforeach
+                                        </ul>
+                                    </div><!-- End .widget-body -->
+                                </div><!-- End .collapse -->
+                                
+
+                            </div><!-- End .widget -->
+                            @endforeach
+
+                            <div class="widget">
+                                <h3 class="widget-title">
+                                    <a data-toggle="collapse" href="#widget-body-3" role="button" aria-expanded="true" aria-controls="widget-body-3">Price</a>
+                                </h3>
+
+                                <div class="collapse show" id="widget-body-3">
+                                    <div class="widget-body">
+                                        <form action="{{route('product.short.price')}}" method="get">
+                                            <div class="price-slider-wrapper">
+                                                <div id="price-slider"></div><!-- End #price-slider -->
+                                            </div><!-- End .price-slider-wrapper -->
+
+                                            <div class="filter-price-action">
+                                                <input type="hidden" name="filter_price_range_input" id="filter-price-range-input">
+                                                <button type="submit" class="btn btn-primary">Filter</button>
+
+                                                <div class="filter-price-text">
+                                                    Price:
+                                                    <span id="filter-price-range"></span>
+                                                </div><!-- End .filter-price-text -->
+                                            </div><!-- End .filter-price-action -->
+                                        </form>
+                                    </div><!-- End .widget-body -->
+                                </div><!-- End .collapse -->
+                            </div><!-- End .widget -->
+
+                            <div class="widget">
+                                <h3 class="widget-title">
+                                    <a data-toggle="collapse" href="#widget-body-4" role="button" aria-expanded="true" aria-controls="widget-body-4">Size</a>
+                                </h3>
+
+                                <div class="collapse show" id="widget-body-4">
+                                    <div class="widget-body">
+                                        <ul class="cat-list">
+                                            <li
+                                            @php
+                                                if (isset($sizecode)) {
+                                                    if ($sizecode == 'small') {
+                                                        echo "class='active'";
+                                                    }
+                                                }
+                                            @endphp
+                                            >
+                                                <a href="{{route('product.short.size','small')}}">Small</a>
+                                            </li>
+
+                                            <li
+                                            @php
+                                                if (isset($sizecode)) {
+                                                    if ($sizecode == 'medium') {
+                                                        echo "class='active'";
+                                                    }
+                                                }
+                                            @endphp
+                                            >
+                                                <a href="{{route('product.short.size','medium')}}">Medium</a>
+                                            </li>
+
+                                            <li
+                                            @php
+                                                if (isset($sizecode)) {
+                                                    if ($sizecode == 'large') {
+                                                        echo "class='active'";
+                                                    }
+                                                }
+                                            @endphp
+                                            >
+                                                <a href="{{route('product.short.size','large')}}">Large</a>
+                                            </li>
+
+                                            <li
+                                            @php
+                                                if (isset($sizecode)) {
+                                                    if ($sizecode == 'extra large') {
+                                                        echo "class='active'";
+                                                    }
+                                                }
+                                            @endphp
+                                            >
+                                                <a href="{{route('product.short.size','extra large')}}">Extra Large</a>
+                                            </li>
+
+                                            <li
+                                            @php
+                                                if (isset($sizecode)) {
+                                                    if ($sizecode == 's') {
+                                                        echo "class='active'";
+                                                    }
+                                                }
+                                            @endphp
+                                            >
+                                                <a href="{{route('product.short.size','s')}}">S</a>
+                                            </li>
+
+                                            <li
+                                            @php
+                                                if (isset($sizecode)) {
+                                                    if ($sizecode == 'm') {
+                                                        echo "class='active'";
+                                                    }
+                                                }
+                                            @endphp
+                                            >
+                                                <a href="{{route('product.short.size','m')}}">M</a>
+                                            </li>
+
+                                            <li
+                                            @php
+                                                if (isset($sizecode)) {
+                                                    if ($sizecode == 'l') {
+                                                        echo "class='active'";
+                                                    }
+                                                }
+                                            @endphp
+                                            >
+                                                <a href="{{route('product.short.size','l')}}">L</a>
+                                            </li>
+
+                                            <li
+                                            @php
+                                                if (isset($sizecode)) {
+                                                    if ($sizecode == 'xl') {
+                                                        echo "class='active'";
+                                                    }
+                                                }
+                                            @endphp
+                                            >
+                                                <a href="{{route('product.short.size','xl')}}">XL</a>
+                                            </li>
+
+                                            <li
+                                            @php
+                                                if (isset($sizecode)) {
+                                                    if ($sizecode == 'xxl') {
+                                                        echo "class='active'";
+                                                    }
+                                                }
+                                            @endphp
+                                            >
+                                                <a href="{{route('product.short.size','xxl')}}">XXL</a>
+                                            </li>
+
+                                            <li
+                                            @php
+                                                if (isset($sizecode)) {
+                                                    if ($sizecode == 'xxxl') {
+                                                        echo "class='active'";
+                                                    }
+                                                }
+                                            @endphp
+                                            >
+                                                <a href="{{route('product.short.size','xxxl')}}">XXXL</a>
+                                            </li>
+                                            
+                                        </ul>
+                                    </div><!-- End .widget-body -->
+                                </div><!-- End .collapse -->
+                            </div><!-- End .widget -->
+
+                            <div class="widget">
+                                <h3 class="widget-title">
+                                    <a data-toggle="collapse" href="#widget-body-5" role="button" aria-expanded="false" aria-controls="widget-body-5" class="collapsed">Brand</a>
+                                </h3>
+
+                                <div class="collapse" id="widget-body-5">
+                                    <div class="widget-body">
+                                        <ul class="cat-list">
+                                            @foreach(App\Brand::orderBy('name','asc')->get() as $brand)
+                                            <li><a href="{{route('brand.show',$brand->id)}}">
+                                                @if(Config::get('app.locale') == 'bd')
+
+                                                    @if(!is_null($brand->name_bd))
+                                                        {{ $brand->name_bd }}
+                                                    @else
+                                                        {{ $brand->name }}
+                                                    @endif
+
+                                                @elseif(Config::get('app.locale') == 'en')
+                                                    {{ $brand->name }}
+                                                @endif
+                                            </a></li>
+                                            @endforeach
+                                            
+                                        </ul>
+                                    </div><!-- End .widget-body -->
+                                </div><!-- End .collapse -->
+                            </div><!-- End .widget -->
+
+                            <div class="widget">
+                                <h3 class="widget-title">
+                                    <a data-toggle="collapse" href="#widget-body-6" role="button" aria-expanded="true" aria-controls="widget-body-6">Color</a>
+                                </h3>
+
+                                <div class="collapse show" id="widget-body-6">
+                                    <div class="widget-body">
+                                        <ul class="config-swatch-list">
+                                            <li
+                                            @php
+                                                if (isset($code)) {
+                                                    if ($code == 'red') {
+                                                        echo "class='active'";
+                                                    }
+                                                }
+                                            @endphp
+                                            >
+                                                <a href="{{route('product.short.color','red')}}" style="background-color: red;"></a>
+                                                <span>Red</span>
+                                            </li>
+                                            <li 
+                                            @php
+                                                if (isset($code)) {
+                                                    if ($code == 'white') {
+                                                        echo "class='active'";
+                                                    }
+                                                }
+                                            @endphp
+                                            >
+                                                <a href="{{route('product.short.color','white')}}" style="background-color: white; border: 1px solid lightgray;"></a>
+                                                <span>White</span>
+                                            </li>
+                                            <li
+                                            @php
+                                                if (isset($code)) {
+                                                    if ($code == 'blue') {
+                                                        echo "class='active'";
+                                                    }
+                                                }
+                                            @endphp
+                                            >
+                                                <a href="{{route('product.short.color','blue')}}" style="background-color: blue;"></a>
+                                                <span>Blue</span>
+                                            </li>
+                                            <li
+                                            @php
+                                                if (isset($code)) {
+                                                    if ($code == 'green') {
+                                                        echo "class='active'";
+                                                    }
+                                                }
+                                            @endphp
+                                            >
+                                                <a href="{{route('product.short.color','green')}}" style="background-color: green;"></a>
+                                                <span>Green</span>
+                                            </li>
+
+                                            <p>
+                                              <a class="btn btn-link" data-toggle="collapse" data-target="#color-more" aria-expanded="false" aria-controls="color-more">
+                                                View More
+                                              </a>
+                                              
+                                            </p>
+                                            <div class="collapse" id="color-more">
+                                              <div class="widget-body">
+                                                <li
+                                                @php
+                                                    if (isset($code)) {
+                                                        if ($code == 'black') {
+                                                            echo "class='active'";
+                                                        }
+                                                    }
+                                                @endphp
+                                                >
+                                                    <a href="{{route('product.short.color','black')}}" style="background-color: black;"></a>
+                                                    <span>Black</span>
+                                                </li>
+
+                                                <li
+                                                @php
+                                                    if (isset($code)) {
+                                                        if ($code == 'yellow') {
+                                                            echo "class='active'";
+                                                        }
+                                                    }
+                                                @endphp
+                                                >
+                                                    <a href="{{route('product.short.color','yellow')}}" style="background-color: yellow;"></a>
+                                                    <span>Yellow</span>
+                                                </li>
+
+                                                <li
+                                                @php
+                                                    if (isset($code)) {
+                                                        if ($code == 'purple') {
+                                                            echo "class='active'";
+                                                        }
+                                                    }
+                                                @endphp
+                                                >
+                                                    <a href="{{route('product.short.color','purple')}}" style="background-color: purple;"></a>
+                                                    <span>Purple</span>
+                                                </li>
+
+                                                <li
+                                                @php
+                                                    if (isset($code)) {
+                                                        if ($code == 'gray') {
+                                                            echo "class='active'";
+                                                        }
+                                                    }
+                                                @endphp
+                                                >
+                                                    <a href="{{route('product.short.color','gray')}}" style="background-color: gray;"></a>
+                                                    <span>Gray</span>
+                                                </li>
+
+                                                <li
+                                                @php
+                                                    if (isset($code)) {
+                                                        if ($code == 'beige') {
+                                                            echo "class='active'";
+                                                        }
+                                                    }
+                                                @endphp
+                                                >
+                                                    <a href="{{route('product.short.color','beige')}}" style="background-color: beige;"></a>
+                                                    <span>Beige</span>
+                                                </li>
+
+                                                <li
+                                                @php
+                                                    if (isset($code)) {
+                                                        if ($code == 'pink') {
+                                                            echo "class='active'";
+                                                        }
+                                                    }
+                                                @endphp
+                                                >
+                                                    <a href="{{route('product.short.color','pink')}}" style="background-color: pink;"></a>
+                                                    <span>Pink</span>
+                                                </li>
+
+                                                <li
+                                                @php
+                                                    if (isset($code)) {
+                                                        if ($code == 'gold') {
+                                                            echo "class='active'";
+                                                        }
+                                                    }
+                                                @endphp
+                                                >
+                                                    <a href="{{route('product.short.color','gold')}}" style="background-color: gold;"></a>
+                                                    <span>Gold</span>
+                                                </li>
+
+                                                <li
+                                                @php
+                                                    if (isset($code)) {
+                                                        if ($code == 'orange') {
+                                                            echo "class='active'";
+                                                        }
+                                                    }
+                                                @endphp
+                                                >
+                                                    <a href="{{route('product.short.color','orange')}}" style="background-color: orange;"></a>
+                                                    <span>Orange</span>
+                                                </li>
+
+                                                <li
+                                                @php
+                                                    if (isset($code)) {
+                                                        if ($code == 'silver') {
+                                                            echo "class='active'";
+                                                        }
+                                                    }
+                                                @endphp
+                                                >
+                                                    <a href="{{route('product.short.color','silver')}}" style="background-color: silver;"></a>
+                                                    <span>Silver</span>
+                                                </li>
+
+                                                <li
+                                                @php
+                                                    if (isset($code)) {
+                                                        if ($code == 'brown') {
+                                                            echo "class='active'";
+                                                        }
+                                                    }
+                                                @endphp
+                                                >
+                                                    <a href="{{route('product.short.color','brown')}}" style="background-color: brown;"></a>
+                                                    <span>Brown</span>
+                                                </li>
+
+                                                <li
+                                                @php
+                                                    if (isset($code)) {
+                                                        if ($code == 'khaki') {
+                                                            echo "class='active'";
+                                                        }
+                                                    }
+                                                @endphp
+                                                >
+                                                    <a href="{{route('product.short.color','khaki')}}" style="background-color: khaki;"></a>
+                                                    <span>Khaki</span>
+                                                </li>
+
+                                                <li
+                                                @php
+                                                    if (isset($code)) {
+                                                        if ($code == 'multi') {
+                                                            echo "class='active'";
+                                                        }
+                                                    }
+                                                @endphp
+                                                >
+                                                    <a href="{{route('product.short.color','multi')}}" style="background-image: linear-gradient(to right,red,white,blue,green);"></a>
+                                                    <span>Multi</span>
+                                                </li>
+
+                                                
+                                              </div>
+                                            </div>
+                                        </ul>
+                                    </div><!-- End .widget-body -->
+                                </div><!-- End .collapse -->
+                            </div><!-- End .widget -->
+                        </div><!-- End .sidebar-wrapper -->
+                    </aside><!-- End .col-lg-4 -->
+                </div><!-- End .row -->
+            </div><!-- End .container-fluid -->
+
+            <div class="mb-3"></div><!-- margin -->
+        </main><!-- End .main -->
+
+
+@endsection
+
+@section('extra_script')
+<script src="{{asset('assets/js/nouislider.min.js')}}"></script>
+@endsection
